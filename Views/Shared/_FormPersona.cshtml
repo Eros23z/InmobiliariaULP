@@ -1,0 +1,36 @@
+﻿@model InmobiliariaULP.Models.Persona
+
+<div class="mb-3">
+    <label asp-for="Dni" class="form-label"></label>
+    <input asp-for="Dni" class="form-control" />
+    <span asp-validation-for="Dni" class="text-danger"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="Nombre" class="form-label"></label>
+    <input asp-for="Nombre" class="form-control" />
+    <span asp-validation-for="Nombre" class="text-danger"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="Apellido" class="form-label"></label>
+    <input asp-for="Apellido" class="form-control" />
+    <span asp-validation-for="Apellido" class="text-danger"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="Telefono" class="form-label"></label>
+    <input asp-for="Telefono" class="form-control" />
+    <span asp-validation-for="Telefono" class="text-danger"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="Email" class="form-label"></label>
+    <input asp-for="Email" class="form-control" />
+    <span asp-validation-for="Email" class="text-danger"></span>
+</div>
+
+<div class="form-check mb-3">
+    <input class="form-check-input" asp-for="Estado" />
+    <label class="form-check-label" asp-for="Estado"></label>
+</div>

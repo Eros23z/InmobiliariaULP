@@ -1,16 +1,18 @@
 ﻿@model InmobiliariaULP.Models.Propietario
 
 @{
-    ViewData["Title"] = "Registrar Propietario";
+    ViewData["Title"] = "Editar Propietario";
 }
 
-<h2>Registrar Propietario</h2>
+<h2>Editar Propietario</h2>
 <hr />
 
 <div class="row">
     <div class="col-md-6">
-        <form asp-action="Create">
+        <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <input type="hidden" asp-for="IdPropietario" />
 
             <partial name="_FormPersona" model="Model" />
 

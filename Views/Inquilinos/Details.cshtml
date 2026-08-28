@@ -1,0 +1,45 @@
+﻿@model InmobiliariaULP.Models.Inquilino
+
+@{
+    ViewData["Title"] = "Detalle del Inquilino";
+}
+
+<h2>Detalles del Inquilino</h2>
+<hr />
+
+<div class="card shadow-sm col-md-6">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Dni)</dt>
+            <dd class="col-sm-8">@Model.Dni</dd>
+
+            <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Apellido)</dt>
+            <dd class="col-sm-8">@Model.Apellido</dd>
+
+            <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Nombre)</dt>
+            <dd class="col-sm-8">@Model.Nombre</dd>
+
+            <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Telefono)</dt>
+            <dd class="col-sm-8">@Model.Telefono</dd>
+
+            <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Email)</dt>
+            <dd class="col-sm-8">@Model.Email</dd>
+
+            <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Estado)</dt>
+            <dd class="col-sm-8">
+                @if (Model.Estado)
+                {
+                    <span class="badge bg-success">Activo</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">Inactivo</span>
+                }
+            </dd>
+        </dl>
+    </div>
+    <div class="card-footer bg-transparent d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.IdInquilino" class="btn btn-warning">Editar</a>
+        <a asp-action="Index" class="btn btn-secondary">Volver al listado</a>
+    </div>
+</div>

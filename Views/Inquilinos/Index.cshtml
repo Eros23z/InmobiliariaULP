@@ -1,13 +1,13 @@
-﻿@model IEnumerable<InmobiliariaULP.Models.Propietario>
+﻿@model IEnumerable<InmobiliariaULP.Models.Inquilino>
 
 @{
-    ViewData["Title"] = "Listado de Propietarios";
+    ViewData["Title"] = "Listado de Inquilino";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2><i class="bi bi-people"></i> Propietarios</h2>
+    <h2><i class="bi bi-people"></i> Inquilinos</h2>
     <a asp-action="Create" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Nuevo Propietario
+        <i class="bi bi-plus-circle"></i> Nuevo Inquilino
     </a>
 </div>
 
@@ -53,7 +53,7 @@
             @if (!Model.Any())
             {
                 <tr>
-                    <td colspan="7" class="text-center py-4 text-muted">No se encontraron propietarios registrados.</td>
+                    <td colspan="7" class="text-center py-4 text-muted">No se encontraron inquilinos registrados.</td>
                 </tr>
             }
             else
@@ -77,9 +77,9 @@
                             }
                         </td>
                         <td class="text-end">
-                            <a asp-action="Edit" asp-route-id="@item.IdPropietario" class="btn btn-sm btn-outline-warning">Editar</a>
-                            <a asp-action="Details" asp-route-id="@item.IdPropietario" class="btn btn-sm btn-outline-info">Detalles</a>
-                            <a asp-action="Delete" asp-route-id="@item.IdPropietario" class="btn btn-sm btn-outline-danger">Eliminar</a>
+                            <a asp-action="Edit" asp-route-id="@item.IdInquilino" class="btn btn-sm btn-outline-warning">Editar</a>
+                            <a asp-action="Details" asp-route-id="@item.IdInquilino" class="btn btn-sm btn-outline-info">Detalles</a>
+                            <a asp-action="Delete" asp-route-id="@item.IdInquilino" class="btn btn-sm btn-outline-danger">Eliminar</a>
                         </td>
                     </tr>
                 }
