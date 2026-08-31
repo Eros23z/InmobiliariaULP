@@ -1,0 +1,56 @@
+﻿@model InmobiliariaULP.Models.Inmueble
+
+@{
+    ViewData["Title"] = "Detalle del Inmueble";
+}
+
+<h2>Detalle de Inmueble</h2>
+<hr />
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">@Model.Direccion</h5>
+                <span class="badge bg-light text-dark">@Model.TipoInmueble?.Descripcion</span>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Propietario:</strong> @Model.Propietario?.Apellido, @Model.Propietario?.Nombre <br />
+                        <strong>Teléfono:</strong> @Model.Propietario?.Telefono <br />
+                        <strong>Email:</strong> @Model.Propietario?.Email
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Cupo Máximo:</strong> @Model.Cupo personas <br />
+                        <strong>Precio por Día:</strong> $@Model.PrecioPorDia.ToString("N2") <br />
+                        <strong>% Seña Exigida:</strong> @Model.PorcentajeReserva.ToString("N0")%
+                    </div>
+                </div>
+                <hr />
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Coordenadas:</strong> @Model.Latitud, @Model.Longitud <br />
+                        <a href="https://maps.google.com/?q=@Model.Latitud,@Model.Longitud" target="_blank" class="btn btn-sm btn-outline-secondary mt-1">Ver en Google Maps</a>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Estado de Oferta:</strong>
+                        @if (Model.Disponible)
+                        {
+                            <span class="badge bg-success">Habilitado para Alquilar</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark">Suspendido Temporalmente</span>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent d-flex gap-2">
+                <a asp-action="Edit" asp-route-id="@Model.IdInmueble" class="btn btn-warning">Editar</a>
+                <a asp-controller="Reservas" asp-action="Create" class="btn btn-success">Crear Reserva Aquí</a>
+                <a asp-action="Index" class="btn btn-secondary">Volver al listado</a>
+            </div>
+        </div>
+    </div>
+</div>

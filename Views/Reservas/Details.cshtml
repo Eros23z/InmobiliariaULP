@@ -1,0 +1,62 @@
+﻿@model InmobiliariaULP.Models.Reserva
+
+@{
+    ViewData["Title"] = "Detalle de Reserva";
+}
+
+<h2>Detalles de la Reserva #@Model.IdReserva</h2>
+<hr />
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Reserva de Estadía</h5>
+                <span class="badge @(Model.Estado == "Vigente" ? "bg-success" : "bg-secondary")">@Model.Estado</span>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h5>Datos del Inmueble</h5>
+                        <strong>Dirección:</strong> @Model.Inmueble?.Direccion <br />
+                        <strong>Tipo:</strong> @Model.Inmueble?.TipoInmueble?.Descripcion <br />
+                        <strong>Propietario:</strong> @Model.Inmueble?.Propietario?.Apellido, @Model.Inmueble?.Propietario?.Nombre <br />
+                        <strong>Teléfono Dueño:</strong> @Model.Inmueble?.Propietario?.Telefono
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Datos del Inquilino</h5>
+                        <strong>Inquilino:</strong> @Model.Inquilino?.Apellido, @Model.Inquilino?.Nombre <br />
+                        <strong>DNI:</strong> @Model.Inquilino?.Dni <br />
+                        <strong>Teléfono:</strong> @Model.Inquilino?.Telefono <br />
+                        <strong>Email:</strong> @Model.Inquilino?.Email
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Período de Alquiler</h5>
+                        <strong>Fecha Desde:</strong> @Model.FechaInicio.ToString("dd/MM/yyyy") <br />
+                        <strong>Fecha Hasta:</strong> @Model.FechaFin.ToString("dd/MM/yyyy") <br />
+                        <strong>Fecha Original:</strong> @Model.FechaFinOriginal.ToString("dd/MM/yyyy") <br />
+                        <strong>Total Estadía:</strong> @Model.CantidadDias días
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Importes Económicos</h5>
+                        <strong>Precio por Día:</strong> $@Model.MontoDiario.ToString("N2") <br />
+                        <strong>Importe Total:</strong> <span class="h5 text-primary">$@Model.ImporteTotal.ToString("N2")</span> <br />
+                        @if (Model.Multa > 0)
+                        {
+                            <strong>Multa Aplicada:</strong> <span class="text-danger">$@Model.Multa.ToString("N2")</span>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent d-flex gap-2">
+                <a asp-action="Edit" asp-route-id="@Model.IdReserva" class="btn btn-warning">Editar</a>
+                <a asp-action="Index" class="btn btn-secondary">Volver al listado</a>
+            </div>
+        </div>
+    </div>
+</div>

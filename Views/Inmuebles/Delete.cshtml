@@ -1,0 +1,33 @@
+﻿@model InmobiliariaULP.Models.Inmueble
+
+@{
+    ViewData["Title"] = "Eliminar Inmueble";
+}
+
+<h2 class="text-danger">Eliminar Inmueble</h2>
+<h5>¿Estás seguro de que deseas eliminar este inmueble?</h5>
+<hr />
+
+<div class="card border-danger shadow-sm col-md-6 mb-3">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Dirección</dt>
+            <dd class="col-sm-8">@Model.Direccion</dd>
+
+            <dt class="col-sm-4">Tipo</dt>
+            <dd class="col-sm-8">@Model.TipoInmueble?.Descripcion</dd>
+
+            <dt class="col-sm-4">Propietario</dt>
+            <dd class="col-sm-8">@Model.Propietario?.Apellido, @Model.Propietario?.Nombre</dd>
+
+            <dt class="col-sm-4">Precio Diario</dt>
+            <dd class="col-sm-8">$@Model.PrecioPorDia.ToString("N2")</dd>
+        </dl>
+    </div>
+</div>
+
+<form asp-action="Delete">
+    <input type="hidden" asp-for="IdInmueble" />
+    <button type="submit" class="btn btn-danger">Confirmar Eliminación</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>

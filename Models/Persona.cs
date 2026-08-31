@@ -20,6 +20,9 @@ namespace InmobiliariaULP.Models
         [Display(Name = "Apellido")]
         public string Apellido { get; set; } = string.Empty;
 
+        [Display(Name = "Nombre Completo")]
+        public string NombreCompleto => $"{Apellido}, {Nombre}";
+
         [Required(ErrorMessage = "El telefono de contacto es obligatorio.")]
         [Phone(ErrorMessage = "Formato de telefono no válido.")]
         [Display(Name = "Telefono")]

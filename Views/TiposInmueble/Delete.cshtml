@@ -1,0 +1,27 @@
+﻿@model InmobiliariaULP.Models.TipoInmueble
+
+@{
+    ViewData["Title"] = "Eliminar Tipo de Inmueble";
+}
+
+<h2 class="text-danger">Eliminar Tipo de Inmueble</h2>
+<h5>¿Estás seguro de que deseas eliminar esta categoría?</h5>
+<hr />
+
+<div class="card border-danger shadow-sm col-md-6 mb-3">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">@Html.DisplayNameFor(model => model.IdTipoInmueble)</dt>
+            <dd class="col-sm-8">#@Model.IdTipoInmueble</dd>
+
+            <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Descripcion)</dt>
+            <dd class="col-sm-8">@Model.Descripcion</dd>
+        </dl>
+    </div>
+</div>
+
+<form asp-action="Delete">
+    <input type="hidden" asp-for="IdTipoInmueble" />
+    <button type="submit" class="btn btn-danger">Confirmar Eliminación</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>

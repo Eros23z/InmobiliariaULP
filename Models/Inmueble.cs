@@ -9,6 +9,9 @@ namespace InmobiliariaULP.Models
         [Display(Name = "Codigo")]
         public int IdInmueble { get; set; }
 
+        [Display(Name = "Inmueble")]
+        public string DescripcionCompleta => $"{Direccion} (Cupo: {Cupo})";
+
         [Required(ErrorMessage = "La direccion es requerida.")]
         [StringLength(150)]
         [Display(Name = "Direccion")]

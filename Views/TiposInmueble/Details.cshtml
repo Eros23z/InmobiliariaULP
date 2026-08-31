@@ -1,0 +1,24 @@
+﻿@model InmobiliariaULP.Models.TipoInmueble
+
+@{
+    ViewData["Title"] = "Detalle del Tipo de Inmueble";
+}
+
+<h2>Detalle de Categoría</h2>
+<hr />
+
+<div class="card shadow-sm col-md-6">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">@Html.DisplayNameFor(model => model.IdTipoInmueble)</dt>
+            <dd class="col-sm-8">#@Model.IdTipoInmueble</dd>
+
+            <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Descripcion)</dt>
+            <dd class="col-sm-8">@Model.Descripcion</dd>
+        </dl>
+    </div>
+    <div class="card-footer bg-transparent d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.IdTipoInmueble" class="btn btn-warning">Editar</a>
+        <a asp-action="Index" class="btn btn-secondary">Volver al listado</a>
+    </div>
+</div>

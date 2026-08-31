@@ -1,0 +1,74 @@
+﻿@model InmobiliariaULP.Models.Reserva
+
+@{
+    ViewData["Title"] = "Editar Reserva";
+}
+
+<h2>Modificar Reserva #@Model.IdReserva</h2>
+<hr />
+
+<div class="row">
+    <div class="col-md-8">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <input type="hidden" asp-for="IdReserva" />
+            <input type="hidden" asp-for="FechaFinOriginal" />
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="IdInmueble" class="form-label"></label>
+                    <select asp-for="IdInmueble" class="form-select" asp-items="ViewBag.IdInmueble"></select>
+                    <span asp-validation-for="IdInmueble" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="IdInquilino" class="form-label"></label>
+                    <select asp-for="IdInquilino" class="form-select" asp-items="ViewBag.IdInquilino"></select>
+                    <span asp-validation-for="IdInquilino" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="FechaInicio" class="form-label"></label>
+                    <input asp-for="FechaInicio" class="form-control" type="date" />
+                    <span asp-validation-for="FechaInicio" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="FechaFin" class="form-label"></label>
+                    <input asp-for="FechaFin" class="form-control" type="date" />
+                    <span asp-validation-for="FechaFin" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label asp-for="MontoDiario" class="form-label"></label>
+                    <input asp-for="MontoDiario" class="form-control" type="number" step="0.01" />
+                    <span asp-validation-for="MontoDiario" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Multa" class="form-label"></label>
+                    <input asp-for="Multa" class="form-control" type="number" step="0.01" />
+                    <span asp-validation-for="Multa" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Estado" class="form-label"></label>
+                    <select asp-for="Estado" class="form-select">
+                        <option value="Vigente">Vigente</option>
+                        <option value="Finalizada">Finalizada</option>
+                        <option value="Anulada">Anulada</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-warning">Actualizar Reserva</button>
+                <a asp-action="Index" class="btn btn-secondary">Volver al listado</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

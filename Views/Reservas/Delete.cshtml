@@ -1,0 +1,33 @@
+﻿@model InmobiliariaULP.Models.Reserva
+
+@{
+    ViewData["Title"] = "Cancelar Reserva";
+}
+
+<h2 class="text-danger">Cancelar Reserva</h2>
+<h5>¿Estás seguro de que deseas anular esta reserva?</h5>
+<hr />
+
+<div class="card border-danger shadow-sm col-md-6 mb-3">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Inmueble</dt>
+            <dd class="col-sm-8">@Model.Inmueble?.Direccion</dd>
+
+            <dt class="col-sm-4">Inquilino</dt>
+            <dd class="col-sm-8">@Model.Inquilino?.Apellido, @Model.Inquilino?.Nombre</dd>
+
+            <dt class="col-sm-4">Período</dt>
+            <dd class="col-sm-8">@Model.FechaInicio.ToString("dd/MM/yyyy") al @Model.FechaFin.ToString("dd/MM/yyyy")</dd>
+
+            <dt class="col-sm-4">Importe Total</dt>
+            <dd class="col-sm-8">$@Model.ImporteTotal.ToString("N2")</dd>
+        </dl>
+    </div>
+</div>
+
+<form asp-action="Delete">
+    <input type="hidden" asp-for="IdReserva" />
+    <button type="submit" class="btn btn-danger">Confirmar Anulación</button>
+    <a asp-action="Index" class="btn btn-secondary">Volver</a>
+</form>

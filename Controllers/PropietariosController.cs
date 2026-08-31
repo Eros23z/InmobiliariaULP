@@ -13,7 +13,7 @@ namespace InmobiliariaULP.Controllers
             _context = context;
         }
 
-        // GET: Propietarios (con búsqueda y paginación en servidor)
+        // GET: Propietarios 
         public async Task<IActionResult> Index(string search, int page = 1, int pageSize = 10)
         {
             var query = _context.Propietarios.AsQueryable();
@@ -60,12 +60,11 @@ namespace InmobiliariaULP.Controllers
 
         // POST: Propietarios/Create
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [ValidateAntiForgeryToken] //Previene ataques csrf
         public async Task<IActionResult> Create([Bind("IdPropietario,Dni,Nombre,Apellido,Telefono,Email,Estado")] Propietario propietario)
         {
             if (ModelState.IsValid)
             {
-                // Validar DNI duplicado
                 bool existeDni = await _context.Propietarios.AnyAsync(p => p.Dni == propietario.Dni);
                 if (existeDni)
                 {

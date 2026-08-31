@@ -1,0 +1,32 @@
+﻿@model InmobiliariaULP.Models.TipoInmueble
+
+@{
+    ViewData["Title"] = "Editar Tipo de Inmueble";
+}
+
+<h2>Editar Tipo de Inmueble</h2>
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <input type="hidden" asp-for="IdTipoInmueble" />
+
+            <div class="mb-3">
+                <label asp-for="Descripcion" class="form-label"></label>
+                <input asp-for="Descripcion" class="form-control" />
+                <span asp-validation-for="Descripcion" class="text-danger"></span>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-warning">Actualizar</button>
+                <a asp-action="Index" class="btn btn-secondary">Volver al listado</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
