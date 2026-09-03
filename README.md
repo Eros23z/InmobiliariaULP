@@ -21,21 +21,24 @@ A continuación se presenta el esquema relacional del modelo de datos de la apli
 
 ```mermaid
 erDiagram
-    PERSONA {
-        string Dni
-        string Nombre
-        string Apellido
-        string NombreCompleto
-        string Telefono
-        string Email
-        bool Estado
-    }
     PROPIETARIOS {
         int IdPropietario PK
+        string Dni UK
+        string Nombre
+        string Apellido
+        string Telefono
+        string Email
+        bit Estado
     }
 
     INQUILINOS {
         int IdInquilino PK
+        string Dni UK
+        string Nombre
+        string Apellido
+        string Telefono
+        string Email
+        bit Estado
     }
 
     TIPOS_INMUEBLE {
@@ -45,7 +48,6 @@ erDiagram
 
     INMUEBLES {
         int IdInmueble PK
-        string DescripcionCompleta
         string Direccion
         int Cupo
         decimal Latitud
@@ -54,25 +56,22 @@ erDiagram
         decimal PorcentajeReserva
         bit Disponible
         string ImagenPortada
-        int PropietarioId FK
-        int TipoInmuebleId FK
+        int IdPropietario FK
+        int IdTipoInmueble FK
     }
 
     RESERVAS {
         int IdReserva PK
-        datetime FechaInicio
-        datetime FechaFin
-        datetime FechaFinOriginal
-        datetime FechaTerminacion
+        date FechaInicio
+        date FechaFin
+        date FechaFinOriginal
+        date FechaTerminacion
         decimal MontoDiario
         decimal Multa
         string Estado
-        int CantidadDias
-        decimal ImporteTotal
         int IdInmueble FK
         int IdInquilino FK
     }
-
 
     PROPIETARIOS ||--o{ INMUEBLES : posee
     TIPOS_INMUEBLE ||--o{ INMUEBLES : clasifica
