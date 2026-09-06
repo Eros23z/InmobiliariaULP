@@ -88,6 +88,7 @@ namespace InmobiliariaULP.Controllers
                 .Include(r => r.Inmueble)
                     .ThenInclude(i => i!.TipoInmueble)
                 .Include(r => r.Inquilino)
+                .Include(r => r.Pagos)
                 .FirstOrDefaultAsync(m => m.IdReserva == id);
 
             if (reserva == null) return NotFound();

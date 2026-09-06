@@ -84,6 +84,20 @@ BEGIN
 END
 GO
 
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Pagos')
+BEGIN
+    CREATE TABLE Pagos (
+        IdPago INT IDENTITY(1,1) PRIMARY KEY,
+        Concepto VARCHAR(150) NOT NULL,
+        FechaPago DATETIME NOT NULL DEFAULT GETDATE(),
+        Importe DECIMAL(12, 2) NOT NULL,
+        Anulado BIT NOT NULL DEFAULT 0,
+        IdReserva INT NOT NULL,
+        CONSTRAINT FK_Pagos_Reservas FOREIGN KEY (IdReserva) REFERENCES Reservas(IdReserva)
+    );
+END
+GO
+
 -- Carga de datos 
 IF NOT EXISTS (SELECT 1 FROM Propietarios)
 BEGIN
@@ -121,5 +135,13 @@ IF NOT EXISTS (SELECT 1 FROM Reservas)
 BEGIN
     INSERT INTO Reservas (FechaInicio, FechaFin, FechaFinOriginal, MontoDiario, Multa, Estado, IdInmueble, IdInquilino) VALUES 
     ('2026-09-01', '2026-09-07', '2026-09-07', 45000.00, 0.00, 'Vigente', 1, 1);
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM Pagos)
+BEGIN
+    INSERT INTO Pagos (Concepto, FechaPago, Importe, Anulado, IdReserva)
+    VALUES 
+    ('Seña inicial 30%', GETDATE(), 13500.00, 0, 1);
 END
 GO

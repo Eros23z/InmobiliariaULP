@@ -61,5 +61,15 @@ namespace InmobiliariaULP.Models
         [NotMapped]
         [Display(Name = "Importe Total")]
         public decimal ImporteTotal => CantidadDias * MontoDiario;
+
+        public IList<Pago>? Pagos { get; set; }
+
+        [NotMapped]
+        [Display(Name = "Total Abonado")]
+        public decimal TotalPagado => Pagos?.Where(p => !p.Anulado).Sum(p => p.Importe) ?? 0;
+
+        [NotMapped]
+        [Display(Name = "Saldo Pendiente")]
+        public decimal SaldoPendiente => (ImporteTotal + Multa) - TotalPagado;
     }
 }

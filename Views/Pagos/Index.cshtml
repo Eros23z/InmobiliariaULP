@@ -1,0 +1,132 @@
+﻿@model IEnumerable<InmobiliariaULP.Models.Pago>
+
+@{
+    ViewData["Title"] = "Listado de Pagos";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2><i class="bi bi-cash-stack"></i> Pagos Registrados</h2>
+        @if (ViewBag.ReservaFiltro != null)
+        {
+            <h6 class="text-muted">
+                Pagos de la Reserva #@ViewBag.ReservaFiltro.IdReserva —
+                @ViewBag.ReservaFiltro.Inquilino.Apellido (@ViewBag.ReservaFiltro.Inmueble.Direccion)
+            </h6>
+        }
+    </div>
+    <div>
+        @if (ViewBag.IdReserva != null)
+        {
+            <a asp-action="Create" asp-route-idReserva="@ViewBag.IdReserva" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Cargar Pago a esta Reserva
+            </a>
+            <a asp-action="Index" class="btn btn-outline-secondary">Ver Todos</a>
+        }
+        else
+        {
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Cargar Nuevo Pago
+            </a>
+        }
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<form method="get" asp-action="Index" class="row g-2 mb-3">
+    <input type="hidden" name="idReserva" value="@ViewBag.IdReserva" />
+    <div class="col-md-5">
+        <input type="text" name="search" class="form-control" placeholder="Buscar por concepto, inquilino o dirección..." value="@ViewBag.Search" />
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-outline-secondary w-100">Buscar</button>
+    </div>
+    @if (!string.IsNullOrEmpty(ViewBag.Search as string))
+    {
+        <div class="col-md-2">
+            <a asp-action="Index" asp-route-idReserva="@ViewBag.IdReserva" class="btn btn-outline-danger w-100">Limpiar</a>
+        </div>
+    }
+</form>
+
+<div class="table-responsive shadow-sm rounded">
+    <table class="table table-hover align-middle mb-0">
+        <thead class="table-dark">
+            <tr>
+                <th>N°</th>
+                <th>Reserva</th>
+                <th>Inquilino</th>
+                <th>Fecha</th>
+                <th>Concepto</th>
+                <th>Importe</th>
+                <th>Estado</th>
+                <th class="text-end">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-muted">No se registran transacciones económicas.</td>
+                </tr>
+            }
+            else
+            {
+                @foreach (var item in Model)
+                {
+                    <tr class="@(item.Anulado ? "table-danger text-muted text-decoration-line-through" : "")">
+                        <td><strong>#@item.IdPago</strong></td>
+                        <td>
+                            <a asp-controller="Reservas" asp-action="Details" asp-route-id="@item.IdReserva" class="text-decoration-none">
+                                Reserva #@item.IdReserva
+                            </a>
+                        </td>
+                        <td>@item.Reserva?.Inquilino?.Apellido, @item.Reserva?.Inquilino?.Nombre</td>
+                        <td>@item.FechaPago.ToString("dd/MM/yyyy")</td>
+                        <td>@item.Concepto</td>
+                        <td><strong>$@item.Importe.ToString("N2")</strong></td>
+                        <td>
+                            @if (item.Anulado)
+                            {
+                                <span class="badge bg-danger">ANULADO</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">Acreditado</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            @if (!item.Anulado)
+                            {
+                                <a asp-action="Edit" asp-route-id="@item.IdPago" class="btn btn-sm btn-outline-warning">Editar Concepto</a>
+                                <a asp-action="Details" asp-route-id="@item.IdPago" class="btn btn-sm btn-outline-info">Detalles</a>
+                                <a asp-action="Delete" asp-route-id="@item.IdPago" class="btn btn-sm btn-outline-danger">Anular</a>
+                            }
+                            else
+                            {
+                                <a asp-action="Details" asp-route-id="@item.IdPago" class="btn btn-sm btn-outline-secondary">Detalles</a>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<partial name="_Pagination" />

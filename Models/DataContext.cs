@@ -12,5 +12,6 @@ namespace InmobiliariaULP.Models
         public DbSet<Inmueble> Inmuebles { get; set; }
         public DbSet<Reserva> Reservas { get; set; }
         public DbSet<TipoInmueble> TiposInmueble { get; set; }
+        public DbSet<Pago> Pagos { get; set; }
     }
 }

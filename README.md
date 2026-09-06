@@ -4,13 +4,13 @@
 
 ---
 
-## 👥 Integrantes del Grupo
+## Integrantes del Grupo
 
 * **Nombre y Apellido** - *ezamora@ulp.edu.ar* - [@Eros23z](https://github.com/Eros23z) - Discord: `abyss23z`
 
 ---
 
-## 📐 Modelado de Datos
+## Modelado de Datos
 
 A continuación se presenta el esquema relacional del modelo de datos de la aplicación:
 
@@ -73,16 +73,26 @@ erDiagram
         int IdInquilino FK
     }
 
+    PAGOS {
+        int IdPago PK
+        string Concepto
+        datetime FechaPago
+        decimal Importe
+        bit Anulado
+        int IdReserva FK
+    }
+
     PROPIETARIOS ||--o{ INMUEBLES : posee
     TIPOS_INMUEBLE ||--o{ INMUEBLES : clasifica
     INMUEBLES ||--o{ RESERVAS : alquila
     INQUILINOS ||--o{ RESERVAS : solicita
+    RESERVAS ||--o{ PAGOS : genera
 ```
 </details>
 
 ---
 
-## 🚀 Instrucciones para Levantar la Base de Datos
+## Instrucciones para Levantar la Base de Datos
 
 1. Abrir **SQL Server Management Studio (SSMS)** o la ventana de **SQL Server Object Explorer** en Visual Studio.
 2. Conectarse a la instancia local (`(localdb)\mssqllocaldb` o `localhost`).

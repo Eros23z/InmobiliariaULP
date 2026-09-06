@@ -1,0 +1,42 @@
+﻿@model InmobiliariaULP.Models.Pago
+
+@{
+    ViewData["Title"] = "Detalle del Pago";
+}
+
+<h2>Comprobante de Pago #@Model.IdPago</h2>
+<hr />
+
+<div class="card shadow-sm col-md-7">
+    <div class="card-header @(Model.Anulado ? "bg-danger" : "bg-dark") text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Transacción de Cobro</h5>
+        <span class="badge @(Model.Anulado ? "bg-light text-danger" : "bg-success")">
+            @(Model.Anulado ? "ANULADO" : "ACREDITADO")
+        </span>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-sm-6">
+                <strong>Concepto:</strong> @Model.Concepto <br />
+                <strong>Fecha:</strong> @Model.FechaPago.ToString("dd/MM/yyyy") <br />
+                <strong>Importe:</strong> <span class="h5 text-success">$@Model.Importe.ToString("N2")</span>
+            </div>
+            <div class="col-sm-6">
+                <strong>Reserva Asociada:</strong>
+                <a asp-controller="Reservas" asp-action="Details" asp-route-id="@Model.IdReserva">
+                    #@Model.IdReserva
+                </a><br />
+                <strong>Inquilino:</strong> @Model.Reserva?.Inquilino?.Apellido, @Model.Reserva?.Inquilino?.Nombre <br />
+                <strong>Inmueble:</strong> @Model.Reserva?.Inmueble?.Direccion
+            </div>
+        </div>
+    </div>
+    <div class="card-footer bg-transparent d-flex gap-2">
+        @if (!Model.Anulado)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.IdPago" class="btn btn-warning">Editar Concepto</a>
+            <a asp-action="Delete" asp-route-id="@Model.IdPago" class="btn btn-danger">Anular Pago</a>
+        }
+        <a asp-action="Index" asp-route-idReserva="@Model.IdReserva" class="btn btn-secondary">Volver</a>
+    </div>
+</div>
