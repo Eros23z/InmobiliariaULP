@@ -1,71 +1,71 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using InmobiliariaULP.Models;
+using InmobiliariaULP.Repositories;
 
 namespace InmobiliariaULP.Controllers
 {
     public class ReservasController : Controller
     {
-        private readonly DataContext _context;
+        private readonly IRepositorioReserva _repoReserva;
+        private readonly IRepositorioInmueble _repoInmueble;
+        private readonly IRepositorioInquilino _repoInquilino;
+        private readonly IRepositorioPago _repoPago;
 
-        public ReservasController(DataContext context)
+        public ReservasController(
+            IRepositorioReserva repoReserva,
+            IRepositorioInmueble repoInmueble,
+            IRepositorioInquilino repoInquilino,
+            IRepositorioPago repoPago)
         {
-            _context = context;
+            _repoReserva = repoReserva;
+            _repoInmueble = repoInmueble;
+            _repoInquilino = repoInquilino;
+            _repoPago = repoPago;
         }
 
-        private async Task CargarListasDesplegables(int? idInmueble = null, int? idInquilino = null)
+        private void CargarListasDesplegables(int? idInmueble = null, int? idInquilino = null)
         {
-            var inmuebles = await _context.Inmuebles
-                .Where(i => i.Disponible)
-                .Include(i => i.TipoInmueble)
-                .ToListAsync();
-
-            var inquilinos = await _context.Inquilinos
+            var inmuebles = _repoInmueble.ObtenerTodos(soloDisponibles: true);
+            var inquilinos = _repoInquilino.ObtenerTodos(null, 1, 500)
                 .Where(i => i.Estado)
-                .OrderBy(i => i.Apellido)
-                .ToListAsync();
+                .OrderBy(i => i.Apellido);
 
             ViewBag.IdInmueble = new SelectList(inmuebles, "IdInmueble", "DescripcionCompleta", idInmueble);
             ViewBag.IdInquilino = new SelectList(inquilinos, "IdInquilino", "NombreCompleto", idInquilino);
         }
 
         // GET: Reservas
-        public async Task<IActionResult> Index(string search, string estado, DateTime? fechaDesde, DateTime? fechaHasta, int page = 1, int pageSize = 10)
+        public IActionResult Index(string search, string estado, DateTime? fechaDesde, DateTime? fechaHasta, int page = 1, int pageSize = 10)
         {
-            var query = _context.Reservas
-                .Include(r => r.Inmueble)
-                .Include(r => r.Inquilino)
-                .AsQueryable();
+            var lista = _repoReserva.ObtenerTodos();
 
             if (!string.IsNullOrWhiteSpace(search))
             {
-                query = query.Where(r => r.Inquilino!.Nombre.Contains(search) ||
-                                         r.Inquilino!.Apellido.Contains(search) ||
-                                         r.Inmueble!.Direccion.Contains(search));
+                lista = lista.Where(r => (r.Inquilino != null && (r.Inquilino.Nombre.Contains(search, StringComparison.OrdinalIgnoreCase) || r.Inquilino.Apellido.Contains(search, StringComparison.OrdinalIgnoreCase))) ||
+                                         (r.Inmueble != null && r.Inmueble.Direccion.Contains(search, StringComparison.OrdinalIgnoreCase))).ToList();
             }
 
             if (!string.IsNullOrWhiteSpace(estado))
             {
-                query = query.Where(r => r.Estado == estado);
+                lista = lista.Where(r => r.Estado == estado).ToList();
             }
 
             if (fechaDesde.HasValue)
             {
-                query = query.Where(r => r.FechaInicio >= fechaDesde.Value);
+                lista = lista.Where(r => r.FechaInicio >= fechaDesde.Value).ToList();
             }
 
             if (fechaHasta.HasValue)
             {
-                query = query.Where(r => r.FechaFin <= fechaHasta.Value);
+                lista = lista.Where(r => r.FechaFin <= fechaHasta.Value).ToList();
             }
 
-            var totalItems = await query.CountAsync();
-            var items = await query
-                .OrderByDescending(r => r.FechaInicio)
+            int totalItems = lista.Count;
+            var paginados = lista
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync();
+                .ToList();
 
             ViewBag.Search = search;
             ViewBag.Estado = estado;
@@ -74,32 +74,27 @@ namespace InmobiliariaULP.Controllers
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
 
-            return View(items);
+            return View(paginados);
         }
 
         // GET: Reservas/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public IActionResult Details(int? id)
         {
             if (id == null) return NotFound();
 
-            var reserva = await _context.Reservas
-                .Include(r => r.Inmueble)
-                    .ThenInclude(i => i!.Propietario)
-                .Include(r => r.Inmueble)
-                    .ThenInclude(i => i!.TipoInmueble)
-                .Include(r => r.Inquilino)
-                .Include(r => r.Pagos)
-                .FirstOrDefaultAsync(m => m.IdReserva == id);
-
+            var reserva = _repoReserva.ObtenerPorId(id.Value);
             if (reserva == null) return NotFound();
+
+            // Cargar pagos asociados mediante su repositorio
+            reserva.Pagos = _repoPago.ObtenerPorReserva(reserva.IdReserva);
 
             return View(reserva);
         }
 
         // GET: Reservas/Create
-        public async Task<IActionResult> Create()
+        public IActionResult Create()
         {
-            await CargarListasDesplegables();
+            CargarListasDesplegables();
             return View(new Reserva
             {
                 FechaInicio = DateTime.Today,
@@ -110,29 +105,20 @@ namespace InmobiliariaULP.Controllers
         // POST: Reservas/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IdReserva,FechaInicio,FechaFin,MontoDiario,IdInmueble,IdInquilino")] Reserva reserva)
+        public IActionResult Create([Bind("IdReserva,FechaInicio,FechaFin,MontoDiario,IdInmueble,IdInquilino")] Reserva reserva)
         {
-            // Validacion sobre fechas
             if (reserva.FechaFin <= reserva.FechaInicio)
             {
                 ModelState.AddModelError("FechaFin", "La fecha de fin debe ser estrictamente posterior a la de inicio.");
             }
 
-            // Asignar el monto diario vigente del inmueble si no vino provisto
-            var inmueble = await _context.Inmuebles.FindAsync(reserva.IdInmueble);
+            var inmueble = _repoInmueble.ObtenerPorId(reserva.IdInmueble);
             if (inmueble != null && reserva.MontoDiario <= 0)
             {
                 reserva.MontoDiario = inmueble.PrecioPorDia;
             }
 
-            // Validacion de solapamiento de fechas con reservas vigentes
-            bool superpuesta = await _context.Reservas.AnyAsync(r =>
-                r.IdInmueble == reserva.IdInmueble &&
-                r.Estado == "Vigente" &&
-                reserva.FechaInicio < r.FechaFin &&
-                reserva.FechaFin > r.FechaInicio
-            );
-
+            bool superpuesta = _repoReserva.HaySolapamiento(reserva.IdInmueble, reserva.FechaInicio, reserva.FechaFin);
             if (superpuesta)
             {
                 ModelState.AddModelError(string.Empty, "El inmueble ya se encuentra reservado en el rango de fechas seleccionado.");
@@ -143,32 +129,31 @@ namespace InmobiliariaULP.Controllers
                 reserva.FechaFinOriginal = reserva.FechaFin;
                 reserva.Estado = "Vigente";
 
-                _context.Add(reserva);
-                await _context.SaveChangesAsync();
+                _repoReserva.Alta(reserva);
                 TempData["Success"] = "Reserva generada exitosamente.";
                 return RedirectToAction(nameof(Index));
             }
 
-            await CargarListasDesplegables(reserva.IdInmueble, reserva.IdInquilino);
+            CargarListasDesplegables(reserva.IdInmueble, reserva.IdInquilino);
             return View(reserva);
         }
 
         // GET: Reservas/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public IActionResult Edit(int? id)
         {
             if (id == null) return NotFound();
 
-            var reserva = await _context.Reservas.FindAsync(id);
+            var reserva = _repoReserva.ObtenerPorId(id.Value);
             if (reserva == null) return NotFound();
 
-            await CargarListasDesplegables(reserva.IdInmueble, reserva.IdInquilino);
+            CargarListasDesplegables(reserva.IdInmueble, reserva.IdInquilino);
             return View(reserva);
         }
 
         // POST: Reservas/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("IdReserva,FechaInicio,FechaFin,FechaFinOriginal,FechaTerminacion,MontoDiario,Multa,Estado,IdInmueble,IdInquilino")] Reserva reserva)
+        public IActionResult Edit(int id, [Bind("IdReserva,FechaInicio,FechaFin,FechaFinOriginal,FechaTerminacion,MontoDiario,Multa,Estado,IdInmueble,IdInquilino")] Reserva reserva)
         {
             if (id != reserva.IdReserva) return NotFound();
 
@@ -177,14 +162,7 @@ namespace InmobiliariaULP.Controllers
                 ModelState.AddModelError("FechaFin", "La fecha de fin debe ser estrictamente posterior a la de inicio.");
             }
 
-            bool superpuesta = await _context.Reservas.AnyAsync(r =>
-                r.IdInmueble == reserva.IdInmueble &&
-                r.IdReserva != reserva.IdReserva &&
-                r.Estado == "Vigente" &&
-                reserva.FechaInicio < r.FechaFin &&
-                reserva.FechaFin > r.FechaInicio
-            );
-
+            bool superpuesta = _repoReserva.HaySolapamiento(reserva.IdInmueble, reserva.FechaInicio, reserva.FechaFin, reserva.IdReserva);
             if (superpuesta)
             {
                 ModelState.AddModelError(string.Empty, "El rango de fechas colisiona con otra reserva activa del mismo inmueble.");
@@ -192,36 +170,21 @@ namespace InmobiliariaULP.Controllers
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(reserva);
-                    await _context.SaveChangesAsync();
-                    TempData["Success"] = "Reserva actualizada correctamente.";
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!_context.Reservas.Any(e => e.IdReserva == reserva.IdReserva))
-                        return NotFound();
-                    else
-                        throw;
-                }
+                _repoReserva.Modificacion(reserva);
+                TempData["Success"] = "Reserva actualizada correctamente.";
                 return RedirectToAction(nameof(Index));
             }
 
-            await CargarListasDesplegables(reserva.IdInmueble, reserva.IdInquilino);
+            CargarListasDesplegables(reserva.IdInmueble, reserva.IdInquilino);
             return View(reserva);
         }
 
         // GET: Reservas/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public IActionResult Delete(int? id)
         {
             if (id == null) return NotFound();
 
-            var reserva = await _context.Reservas
-                .Include(r => r.Inmueble)
-                .Include(r => r.Inquilino)
-                .FirstOrDefaultAsync(m => m.IdReserva == id);
-
+            var reserva = _repoReserva.ObtenerPorId(id.Value);
             if (reserva == null) return NotFound();
 
             return View(reserva);
@@ -230,15 +193,10 @@ namespace InmobiliariaULP.Controllers
         // POST: Reservas/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public IActionResult DeleteConfirmed(int id)
         {
-            var reserva = await _context.Reservas.FindAsync(id);
-            if (reserva != null)
-            {
-                _context.Reservas.Remove(reserva);
-                await _context.SaveChangesAsync();
-                TempData["Success"] = "Reserva cancelada y eliminada.";
-            }
+            _repoReserva.Baja(id);
+            TempData["Success"] = "Reserva cancelada y eliminada.";
             return RedirectToAction(nameof(Index));
         }
     }

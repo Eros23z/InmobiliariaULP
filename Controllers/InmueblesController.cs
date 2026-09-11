@@ -1,167 +1,130 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using InmobiliariaULP.Models;
+using InmobiliariaULP.Repositories;
 
 namespace InmobiliariaULP.Controllers
 {
     public class InmueblesController : Controller
     {
-        private readonly DataContext _context;
+        private readonly IRepositorioInmueble _repoInmueble;
+        private readonly IRepositorioPropietario _repoPropietario;
+        private readonly IRepositorioTipoInmueble _repoTipoInmueble;
 
-        public InmueblesController(DataContext context)
+        public InmueblesController(
+            IRepositorioInmueble repoInmueble,
+            IRepositorioPropietario repoPropietario,
+            IRepositorioTipoInmueble repoTipoInmueble)
         {
-            _context = context;
+            _repoInmueble = repoInmueble;
+            _repoPropietario = repoPropietario;
+            _repoTipoInmueble = repoTipoInmueble;
         }
 
-        // Carga de combos desplegables
-        private async Task CargarListasDesplegables(int? idPropietario = null, int? idTipo = null)
+        private void CargarListasDesplegables(int? idPropietario = null, int? idTipo = null)
         {
-            var propietarios = await _context.Propietarios
+            var propietarios = _repoPropietario.ObtenerTodos(null, 1, 500)
                 .Where(p => p.Estado)
-                .OrderBy(p => p.Apellido)
-                .ToListAsync();
+                .OrderBy(p => p.Apellido);
 
-            var tipos = await _context.TiposInmueble
-                .OrderBy(t => t.Descripcion)
-                .ToListAsync();
+            var tipos = _repoTipoInmueble.ObtenerTodos()
+                .OrderBy(t => t.Descripcion);
 
             ViewBag.IdPropietario = new SelectList(propietarios, "IdPropietario", "NombreCompleto", idPropietario);
             ViewBag.IdTipoInmueble = new SelectList(tipos, "IdTipoInmueble", "Descripcion", idTipo);
         }
 
         // GET: Inmuebles
-        public async Task<IActionResult> Index(string search, int? tipoId, bool? soloDisponibles, int page = 1, int pageSize = 10)
+        public IActionResult Index(string search, int? tipoId, bool? soloDisponibles, int page = 1, int pageSize = 10)
         {
-            var query = _context.Inmuebles
-                .Include(i => i.Propietario)
-                .Include(i => i.TipoInmueble)
-                .AsQueryable();
+            var items = _repoInmueble.ObtenerTodos(search, tipoId, soloDisponibles);
 
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                query = query.Where(i => i.Direccion.Contains(search) ||
-                                         i.Propietario!.Apellido.Contains(search) ||
-                                         i.Propietario!.Nombre.Contains(search));
-            }
-
-            if (tipoId.HasValue && tipoId.Value > 0)
-            {
-                query = query.Where(i => i.IdTipoInmueble == tipoId.Value);
-            }
-
-            if (soloDisponibles.HasValue && soloDisponibles.Value)
-            {
-                query = query.Where(i => i.Disponible);
-            }
-
-            var totalItems = await query.CountAsync();
-            var items = await query
-                .OrderBy(i => i.Direccion)
+            int totalItems = items.Count;
+            var paginados = items
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync();
+                .ToList();
 
             ViewBag.Search = search;
             ViewBag.TipoId = tipoId;
             ViewBag.SoloDisponibles = soloDisponibles;
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
-            ViewBag.TiposFiltro = new SelectList(await _context.TiposInmueble.ToListAsync(), "IdTipoInmueble", "Descripcion", tipoId);
+            ViewBag.TiposFiltro = new SelectList(_repoTipoInmueble.ObtenerTodos(), "IdTipoInmueble", "Descripcion", tipoId);
 
-            return View(items);
+            return View(paginados);
         }
 
         // GET: Inmuebles/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public IActionResult Details(int? id)
         {
             if (id == null) return NotFound();
 
-            var inmueble = await _context.Inmuebles
-                .Include(i => i.Propietario)
-                .Include(i => i.TipoInmueble)
-                .FirstOrDefaultAsync(m => m.IdInmueble == id);
-
+            var inmueble = _repoInmueble.ObtenerPorId(id.Value);
             if (inmueble == null) return NotFound();
 
             return View(inmueble);
         }
 
         // GET: Inmuebles/Create
-        public async Task<IActionResult> Create()
+        public IActionResult Create()
         {
-            await CargarListasDesplegables();
+            CargarListasDesplegables();
             return View();
         }
 
         // POST: Inmuebles/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IdInmueble,Direccion,Cupo,Latitud,Longitud,PrecioPorDia,PorcentajeReserva,Disponible,ImagenPortada,IdPropietario,IdTipoInmueble")] Inmueble inmueble)
+        public IActionResult Create([Bind("IdInmueble,Direccion,Cupo,Latitud,Longitud,PrecioPorDia,PorcentajeReserva,Disponible,ImagenPortada,IdPropietario,IdTipoInmueble")] Inmueble inmueble)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(inmueble);
-                await _context.SaveChangesAsync();
+                _repoInmueble.Alta(inmueble);
                 TempData["Success"] = "Inmueble publicado exitosamente.";
                 return RedirectToAction(nameof(Index));
             }
 
-            await CargarListasDesplegables(inmueble.IdPropietario, inmueble.IdTipoInmueble);
+            CargarListasDesplegables(inmueble.IdPropietario, inmueble.IdTipoInmueble);
             return View(inmueble);
         }
 
         // GET: Inmuebles/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public IActionResult Edit(int? id)
         {
             if (id == null) return NotFound();
 
-            var inmueble = await _context.Inmuebles.FindAsync(id);
+            var inmueble = _repoInmueble.ObtenerPorId(id.Value);
             if (inmueble == null) return NotFound();
 
-            await CargarListasDesplegables(inmueble.IdPropietario, inmueble.IdTipoInmueble);
+            CargarListasDesplegables(inmueble.IdPropietario, inmueble.IdTipoInmueble);
             return View(inmueble);
         }
 
         // POST: Inmuebles/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("IdInmueble,Direccion,Cupo,Latitud,Longitud,PrecioPorDia,PorcentajeReserva,Disponible,ImagenPortada,IdPropietario,IdTipoInmueble")] Inmueble inmueble)
+        public IActionResult Edit(int id, [Bind("IdInmueble,Direccion,Cupo,Latitud,Longitud,PrecioPorDia,PorcentajeReserva,Disponible,ImagenPortada,IdPropietario,IdTipoInmueble")] Inmueble inmueble)
         {
             if (id != inmueble.IdInmueble) return NotFound();
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(inmueble);
-                    await _context.SaveChangesAsync();
-                    TempData["Success"] = "Inmueble actualizado correctamente.";
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!_context.Inmuebles.Any(e => e.IdInmueble == inmueble.IdInmueble))
-                        return NotFound();
-                    else
-                        throw;
-                }
+                _repoInmueble.Modificacion(inmueble);
+                TempData["Success"] = "Inmueble actualizado correctamente.";
                 return RedirectToAction(nameof(Index));
             }
 
-            await CargarListasDesplegables(inmueble.IdPropietario, inmueble.IdTipoInmueble);
+            CargarListasDesplegables(inmueble.IdPropietario, inmueble.IdTipoInmueble);
             return View(inmueble);
         }
 
         // GET: Inmuebles/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public IActionResult Delete(int? id)
         {
             if (id == null) return NotFound();
 
-            var inmueble = await _context.Inmuebles
-                .Include(i => i.Propietario)
-                .Include(i => i.TipoInmueble)
-                .FirstOrDefaultAsync(m => m.IdInmueble == id);
-
+            var inmueble = _repoInmueble.ObtenerPorId(id.Value);
             if (inmueble == null) return NotFound();
 
             return View(inmueble);
@@ -170,30 +133,25 @@ namespace InmobiliariaULP.Controllers
         // POST: Inmuebles/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public IActionResult DeleteConfirmed(int id)
         {
-            bool tieneReservas = await _context.Reservas.AnyAsync(r => r.IdInmueble == id);
-            if (tieneReservas)
+            try
             {
-                TempData["Error"] = "No se puede eliminar el inmueble porque registra reservas historicas o activas. Se recomienda suspender su disponibilidad.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            var inmueble = await _context.Inmuebles.FindAsync(id);
-            if (inmueble != null)
-            {
-                _context.Inmuebles.Remove(inmueble);
-                await _context.SaveChangesAsync();
+                _repoInmueble.Baja(id);
                 TempData["Success"] = "Inmueble eliminado correctamente.";
+            }
+            catch (Exception)
+            {
+                TempData["Error"] = "No se puede eliminar el inmueble porque registra reservas asociadas. Se recomienda suspender su disponibilidad.";
             }
             return RedirectToAction(nameof(Index));
         }
 
-        // Endpoint para obtener el precio por dia via fetch/AJAX
+        // Endpoint AJAX
         [HttpGet]
-        public async Task<IActionResult> ObtenerPrecio(int id)
+        public IActionResult ObtenerPrecio(int id)
         {
-            var inmueble = await _context.Inmuebles.FindAsync(id);
+            var inmueble = _repoInmueble.ObtenerPorId(id);
             if (inmueble == null) return NotFound();
             return Json(new { precio = inmueble.PrecioPorDia, porcentaje = inmueble.PorcentajeReserva });
         }

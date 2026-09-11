@@ -1,52 +1,37 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using InmobiliariaULP.Models;
+using InmobiliariaULP.Repositories;
 
 namespace InmobiliariaULP.Controllers
 {
     public class InquilinosController : Controller
     {
-        private readonly DataContext _context;
+        private readonly IRepositorioInquilino _repo;
 
-        public InquilinosController(DataContext context)
+        public InquilinosController(IRepositorioInquilino repo)
         {
-            _context = context;
+            _repo = repo;
         }
 
         // GET: Inquilinos
-        public async Task<IActionResult> Index(string search, int page = 1, int pageSize = 10)
+        public IActionResult Index(string search, int page = 1, int pageSize = 10)
         {
-            var query = _context.Inquilinos.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                query = query.Where(i => i.Nombre.Contains(search) ||
-                                         i.Apellido.Contains(search) ||
-                                         i.Dni.Contains(search) ||
-                                         i.Email.Contains(search));
-            }
-
-            var totalItems = await query.CountAsync();
-            var items = await query
-                .OrderBy(i => i.Apellido)
-                .ThenBy(i => i.Nombre)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+            var items = _repo.ObtenerTodos(search, page, pageSize);
+            int total = _repo.Contar(search);
 
             ViewBag.Search = search;
             ViewBag.CurrentPage = page;
-            ViewBag.TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+            ViewBag.TotalPages = (int)Math.Ceiling(total / (double)pageSize);
 
             return View(items);
         }
 
         // GET: Inquilinos/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public IActionResult Details(int? id)
         {
             if (id == null) return NotFound();
 
-            var inquilino = await _context.Inquilinos.FirstOrDefaultAsync(m => m.IdInquilino == id);
+            var inquilino = _repo.ObtenerPorId(id.Value);
             if (inquilino == null) return NotFound();
 
             return View(inquilino);
@@ -61,31 +46,30 @@ namespace InmobiliariaULP.Controllers
         // POST: Inquilinos/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IdInquilino,Dni,Nombre,Apellido,Telefono,Email,Estado")] Inquilino inquilino)
+        public IActionResult Create([Bind("IdInquilino,Dni,Nombre,Apellido,Telefono,Email,Estado")] Inquilino inquilino)
         {
             if (ModelState.IsValid)
             {
-                bool existeDni = await _context.Inquilinos.AnyAsync(i => i.Dni == inquilino.Dni);
-                if (existeDni)
+                try
                 {
-                    ModelState.AddModelError("Dni", "Ya existe un inquilino registrado con este DNI.");
-                    return View(inquilino);
+                    _repo.Alta(inquilino);
+                    TempData["Success"] = "Inquilino registrado exitosamente.";
+                    return RedirectToAction(nameof(Index));
                 }
-
-                _context.Add(inquilino);
-                await _context.SaveChangesAsync();
-                TempData["Success"] = "Inquilino registrado exitosamente.";
-                return RedirectToAction(nameof(Index));
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("Dni", "Error al guardar el inquilino o el DNI ya se encuentra registrado.");
+                }
             }
             return View(inquilino);
         }
 
         // GET: Inquilinos/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public IActionResult Edit(int? id)
         {
             if (id == null) return NotFound();
 
-            var inquilino = await _context.Inquilinos.FindAsync(id);
+            var inquilino = _repo.ObtenerPorId(id.Value);
             if (inquilino == null) return NotFound();
 
             return View(inquilino);
@@ -94,43 +78,32 @@ namespace InmobiliariaULP.Controllers
         // POST: Inquilinos/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("IdInquilino,Dni,Nombre,Apellido,Telefono,Email,Estado")] Inquilino inquilino)
+        public IActionResult Edit(int id, [Bind("IdInquilino,Dni,Nombre,Apellido,Telefono,Email,Estado")] Inquilino inquilino)
         {
             if (id != inquilino.IdInquilino) return NotFound();
 
             if (ModelState.IsValid)
             {
-                bool existeDni = await _context.Inquilinos.AnyAsync(i => i.Dni == inquilino.Dni && i.IdInquilino != id);
-                if (existeDni)
-                {
-                    ModelState.AddModelError("Dni", "El DNI ingresado ya pertenece a otro inquilino.");
-                    return View(inquilino);
-                }
-
                 try
                 {
-                    _context.Update(inquilino);
-                    await _context.SaveChangesAsync();
+                    _repo.Modificacion(inquilino);
                     TempData["Success"] = "Inquilino actualizado correctamente.";
+                    return RedirectToAction(nameof(Index));
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (Exception)
                 {
-                    if (!_context.Inquilinos.Any(e => e.IdInquilino == inquilino.IdInquilino))
-                        return NotFound();
-                    else
-                        throw;
+                    ModelState.AddModelError("Dni", "El DNI ingresado ya pertenece a otro inquilino.");
                 }
-                return RedirectToAction(nameof(Index));
             }
             return View(inquilino);
         }
 
         // GET: Inquilinos/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public IActionResult Delete(int? id)
         {
             if (id == null) return NotFound();
 
-            var inquilino = await _context.Inquilinos.FirstOrDefaultAsync(m => m.IdInquilino == id);
+            var inquilino = _repo.ObtenerPorId(id.Value);
             if (inquilino == null) return NotFound();
 
             return View(inquilino);
@@ -139,15 +112,10 @@ namespace InmobiliariaULP.Controllers
         // POST: Inquilinos/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public IActionResult DeleteConfirmed(int id)
         {
-            var inquilino = await _context.Inquilinos.FindAsync(id);
-            if (inquilino != null)
-            {
-                _context.Inquilinos.Remove(inquilino);
-                await _context.SaveChangesAsync();
-                TempData["Success"] = "Inquilino eliminado correctamente.";
-            }
+            _repo.Baja(id);
+            TempData["Success"] = "Inquilino eliminado correctamente.";
             return RedirectToAction(nameof(Index));
         }
     }

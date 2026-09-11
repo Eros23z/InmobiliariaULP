@@ -22,3 +22,4 @@ secrets.json
 ## Node / Frontend (si aplican herramientas externas)
 node_modules/
 dist/
+/wwwroot/lib

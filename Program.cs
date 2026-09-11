@@ -1,10 +1,13 @@
-using InmobiliariaULP.Models;
-using Microsoft.EntityFrameworkCore;
+using InmobiliariaULP.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<DataContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<IRepositorioPropietario, RepositorioPropietario>();
+builder.Services.AddScoped<IRepositorioInquilino, RepositorioInquilino>();
+builder.Services.AddScoped<IRepositorioTipoInmueble, RepositorioTipoInmueble>();
+builder.Services.AddScoped<IRepositorioInmueble, RepositorioInmueble>();
+builder.Services.AddScoped<IRepositorioReserva, RepositorioReserva>();
+builder.Services.AddScoped<IRepositorioPago, RepositorioPago>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

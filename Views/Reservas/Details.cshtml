@@ -39,7 +39,7 @@
                         <h5>Período de Alquiler</h5>
                         <strong>Fecha Desde:</strong> @Model.FechaInicio.ToString("dd/MM/yyyy") <br />
                         <strong>Fecha Hasta:</strong> @Model.FechaFin.ToString("dd/MM/yyyy") <br />
-                        <strong>Fecha Original:</strong> @Model.FechaFinOriginal.ToString("dd/MM/yyyy") <br />
+                        <strong>Fecha Original:</strong> @Model.FechaFinOriginal?.ToString("dd/MM/yyyy") <br />
                         <strong>Total Estadía:</strong> @Model.CantidadDias días
                     </div>
                     <div class="col-md-6">
@@ -55,7 +55,7 @@
 
                 <hr />
 
-                <!-- Tabla contextual de pagos dentro de Details de Reservas -->
+                <!-- Tabla de pagos -->
                 <div class="mt-4">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <h4><i class="bi bi-cash-coin"></i> Pagos Registrados de la Reserva</h4>

@@ -21,7 +21,7 @@ namespace InmobiliariaULP.Models
 
         [DataType(DataType.Date)]
         [Display(Name = "Fecha Fin Original")]
-        public DateTime FechaFinOriginal { get; set; }
+        public DateTime? FechaFinOriginal { get; set; }
 
         [DataType(DataType.Date)]
         [Display(Name = "Fecha Terminacion Anticipada")]
