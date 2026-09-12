@@ -10,5 +10,6 @@ namespace InmobiliariaULP.Repositories
         int Alta(Reserva reserva);
         int Modificacion(Reserva reserva);
         int Baja(int id);
+        int FinalizarConMulta(int idReserva, DateTime fechaTerminacion, decimal multa, int usuarioId);
     }
 }

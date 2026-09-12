@@ -9,6 +9,6 @@ namespace InmobiliariaULP.Repositories
         Pago? ObtenerPorId(int id);
         int Alta(Pago pago);
         int ModificarConcepto(int id, string concepto);
-        int Anular(int id);
+        int Anular(int id, int usuarioAnulaId);
     }
 }

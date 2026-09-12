@@ -115,6 +115,21 @@
                 <a asp-action="Edit" asp-route-id="@Model.IdReserva" class="btn btn-warning">Editar</a>
                 <a asp-action="Index" class="btn btn-secondary">Volver al listado</a>
             </div>
+            <div class="card-footer bg-transparent d-flex gap-2">
+                @if (Model.Estado == "Vigente")
+                {
+                    <a asp-action="Finalizar" asp-route-id="@Model.IdReserva" class="btn btn-outline-danger">
+                        <i class="bi bi-x-circle"></i> Finalizar con Multa
+                    </a>
+                }
+
+                <a asp-action="Renovar" asp-route-id="@Model.IdReserva" class="btn btn-outline-success">
+                    <i class="bi bi-arrow-repeat"></i> Extender / Renovar
+                </a>
+
+                <a asp-action="Edit" asp-route-id="@Model.IdReserva" class="btn btn-warning">Editar</a>
+                <a asp-action="Index" class="btn btn-secondary">Volver al Listado</a>
+            </div>
         </div>
     </div>
 </div>

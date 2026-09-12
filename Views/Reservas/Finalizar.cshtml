@@ -1,0 +1,63 @@
+﻿@model InmobiliariaULP.Models.Reserva
+
+@{
+    ViewData["Title"] = "Finalización Anticipada";
+    DateTime fechaPactada = ViewBag.FechaFinPactada;
+}
+
+<h2>Finalización Anticipada de Reserva #@Model.IdReserva</h2>
+<hr />
+
+<div class="row">
+    <div class="col-md-7">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">Condiciones de la Reserva Actual</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Inmueble:</strong> @Model.Inmueble?.Direccion</p>
+                <p><strong>Inquilino:</strong> @Model.Inquilino?.Apellido, @Model.Inquilino?.Nombre</p>
+                <p><strong>Período Original:</strong> @Model.FechaInicio.ToString("dd/MM/yyyy") al @fechaPactada.ToString("dd/MM/yyyy")</p>
+                <p><strong>Tarifa Diaria:</strong> $@Model.MontoDiario.ToString("N2")</p>
+            </div>
+        </div>
+
+        <form asp-action="Finalizar" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.IdReserva" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Calcular y Aplicar Multa</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        <label class="control-label fw-bold">Fecha Efectiva de Terminación:</label>
+                        <input type="date" name="fechaTerminacion" id="fechaTerminacion"
+                               class="form-control"
+                               value="@DateTime.Today.ToString("yyyy-MM-dd")"
+                               min="@Model.FechaInicio.ToString("yyyy-MM-dd")"
+                               max="@fechaPactada.AddDays(-1).ToString("yyyy-MM-dd")" required />
+                        <span class="text-muted small">Debe ser anterior al @fechaPactada.ToString("dd/MM/yyyy").</span>
+                    </div>
+
+                    <div class="alert alert-info py-2">
+                        <small>
+                            <strong>Regla de Penalización:</strong><br />
+                            • Menos del 50% del plazo transcurrido: 50% de los días restantes.<br />
+                            • 50% o más del plazo transcurrido: 25% de los días restantes.<br />
+                            El cobro se asentará automáticamente en la cuenta de pagos.
+                        </small>
+                    </div>
+                </div>
+                <div class="card-footer d-flex gap-2">
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('¿Confirma la rescisión anticipada y la emisión de la multa?');">
+                        Confirmar y Cobrar Multa
+                    </button>
+                    <a asp-action="Details" asp-route-id="@Model.IdReserva" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

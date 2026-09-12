@@ -190,5 +190,60 @@ namespace InmobiliariaULP.Repositories
                 }
             }
         }
+
+        public int FinalizarConMulta(int idReserva, DateTime fechaTerminacion, decimal multa, int usuarioId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        // 1. Actualizar el estado, fecha efectiva de corte y multa de la reserva
+                        string sqlReserva = @"
+                    UPDATE Reservas
+                    SET FechaTerminacion = @fechaTerminacion,
+                        Multa = @multa,
+                        Estado = 'Finalizada'
+                    WHERE IdReserva = @idReserva;";
+
+                        using (var cmdReserva = new SqlCommand(sqlReserva, connection, transaction))
+                        {
+                            cmdReserva.Parameters.AddWithValue("@fechaTerminacion", fechaTerminacion);
+                            cmdReserva.Parameters.AddWithValue("@multa", multa);
+                            cmdReserva.Parameters.AddWithValue("@idReserva", idReserva);
+                            cmdReserva.ExecuteNonQuery();
+                        }
+
+                        // 2. Impactar el cobro de la multa en Pagos si el importe es mayor a 0
+                        if (multa > 0)
+                        {
+                            string sqlPago = @"
+                        INSERT INTO Pagos (Concepto, FechaPago, Importe, Anulado, IdReserva, UsuarioCreaId)
+                        VALUES (@concepto, @fechaPago, @importe, 0, @idReserva, @usuarioCreaId);";
+
+                            using (var cmdPago = new SqlCommand(sqlPago, connection, transaction))
+                            {
+                                cmdPago.Parameters.AddWithValue("@concepto", $"Multa por rescisión anticipada de reserva #{idReserva}");
+                                cmdPago.Parameters.AddWithValue("@fechaPago", fechaTerminacion);
+                                cmdPago.Parameters.AddWithValue("@importe", multa);
+                                cmdPago.Parameters.AddWithValue("@idReserva", idReserva);
+                                cmdPago.Parameters.AddWithValue("@usuarioCreaId", usuarioId > 0 ? usuarioId : 1);
+                                cmdPago.ExecuteNonQuery();
+                            }
+                        }
+
+                        transaction.Commit();
+                        return 1;
+                    }
+                    catch (Exception)
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+            }
+        }
     }
 }

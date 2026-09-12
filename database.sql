@@ -98,6 +98,21 @@ BEGIN
 END
 GO
 
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Usuarios')
+BEGIN
+    CREATE TABLE Usuarios (
+        IdUsuario INT IDENTITY(1,1) PRIMARY KEY,
+        Nombre VARCHAR(50) NOT NULL,
+        Apellido VARCHAR(50) NOT NULL,
+        Email VARCHAR(100) NOT NULL UNIQUE,
+        Clave VARCHAR(255) NOT NULL,
+        Rol VARCHAR(20) NOT NULL DEFAULT 'Empleado', -- 'Administrador' o 'Empleado'
+        Avatar VARCHAR(255) NULL,
+        Estado BIT NOT NULL DEFAULT 1
+    );
+END
+GO
+
 -- Carga de datos 
 IF NOT EXISTS (SELECT 1 FROM Propietarios)
 BEGIN
@@ -143,5 +158,24 @@ BEGIN
     INSERT INTO Pagos (Concepto, FechaPago, Importe, Anulado, IdReserva)
     VALUES 
     ('Seña inicial 30%', GETDATE(), 13500.00, 0, 1);
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM Propietarios)
+BEGIN
+    INSERT INTO Usuarios (Nombre, Apellido, Email, Clave, Rol, Estado)
+    VALUES 
+    ('Administrador', 'General', 'admin@inmobiliaria.com', 'admin123', 'Administrador', 1),
+    ('Juan', 'Empleado', 'empleado@inmobiliaria.com', 'empleado123', 'Empleado', 1);
+END
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Pagos') AND name = 'UsuarioCreaId')
+BEGIN
+    ALTER TABLE Pagos ADD UsuarioCreaId INT NOT NULL DEFAULT 1;
+    ALTER TABLE Pagos ADD UsuarioAnulaId INT NULL;
+
+    ALTER TABLE Pagos ADD CONSTRAINT FK_Pagos_UsuarioCrea FOREIGN KEY (UsuarioCreaId) REFERENCES Usuarios(IdUsuario);
+    ALTER TABLE Pagos ADD CONSTRAINT FK_Pagos_UsuarioAnula FOREIGN KEY (UsuarioAnulaId) REFERENCES Usuarios(IdUsuario);
 END
 GO

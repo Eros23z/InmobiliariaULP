@@ -88,6 +88,7 @@ namespace InmobiliariaULP.Controllers
             if (ModelState.IsValid)
             {
                 pago.Anulado = false;
+                pago.UsuarioCreaId = ObtenerUsuarioActualId();
                 _repoPago.Alta(pago);
 
                 TempData["Success"] = "Pago registrado correctamente.";
@@ -159,12 +160,23 @@ namespace InmobiliariaULP.Controllers
             var pago = _repoPago.ObtenerPorId(id);
             if (pago != null)
             {
-                _repoPago.Anular(id);
+                int usuarioAnulaId = ObtenerUsuarioActualId(); 
+                _repoPago.Anular(id, usuarioAnulaId);
                 TempData["Success"] = "El pago ha sido anulado correctamente.";
                 return RedirectToAction(nameof(Index), new { idReserva = pago.IdReserva });
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        private int ObtenerUsuarioActualId()
+        {
+            var claimId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (int.TryParse(claimId, out int idUsuario))
+            {
+                return idUsuario;
+            }
+            return 1; 
         }
     }
 }

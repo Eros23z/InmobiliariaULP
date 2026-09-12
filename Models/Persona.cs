@@ -1,5 +1,4 @@
-﻿// Models/Persona.cs
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace InmobiliariaULP.Models
 {

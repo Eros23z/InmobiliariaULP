@@ -34,5 +34,14 @@ namespace InmobiliariaULP.Models
 
         [ForeignKey(nameof(IdReserva))]
         public Reserva? Reserva { get; set; }
+
+        [Display(Name = "Creado por")]
+        public int UsuarioCreaId { get; set; }
+
+        [Display(Name = "Anulado por")]
+        public int? UsuarioAnulaId { get; set; }
+
+        public Usuario? UsuarioCrea { get; set; }
+        public Usuario? UsuarioAnula { get; set; }
     }
 }

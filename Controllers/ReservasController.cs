@@ -199,5 +199,117 @@ namespace InmobiliariaULP.Controllers
             TempData["Success"] = "Reserva cancelada y eliminada.";
             return RedirectToAction(nameof(Index));
         }
+
+        private int ObtenerUsuarioActualId()
+        {
+            var claimId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (int.TryParse(claimId, out int idUsuario))
+            {
+                return idUsuario;
+            }
+            return 1;
+        }
+
+        public IActionResult Finalizar(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var reserva = _repoReserva.ObtenerPorId(id.Value);
+            if (reserva == null) return NotFound();
+
+            if (reserva.Estado != "Vigente")
+            {
+                TempData["Error"] = "Solo se pueden rescindir reservas que se encuentren en estado 'Vigente'.";
+                return RedirectToAction(nameof(Details), new { id = reserva.IdReserva });
+            }
+
+            ViewBag.FechaFinPactada = reserva.FechaFinOriginal ?? reserva.FechaFin;
+            return View(reserva);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Finalizar(int id, DateTime fechaTerminacion)
+        {
+            var reserva = _repoReserva.ObtenerPorId(id);
+            if (reserva == null) return NotFound();
+
+            var fechaFinPactada = reserva.FechaFinOriginal ?? reserva.FechaFin;
+
+            // Validaciones sobre la fecha de terminación
+            if (fechaTerminacion.Date < reserva.FechaInicio.Date)
+            {
+                ModelState.AddModelError("fechaTerminacion", "La fecha de corte no puede ser anterior a la fecha de inicio.");
+            }
+            if (fechaTerminacion.Date >= fechaFinPactada.Date)
+            {
+                ModelState.AddModelError("fechaTerminacion", "Para terminar anticipadamente, la fecha debe ser anterior a la fecha de fin pactada.");
+            }
+
+            if (ModelState.IsValid)
+            {
+                // Dias totales pactados originalmente
+                int diasTotales = (fechaFinPactada.Date - reserva.FechaInicio.Date).Days;
+                if (diasTotales <= 0) diasTotales = 1;
+
+                // Dias efectivamente cumplidos y dias restantes no utilizados
+                int diasCumplidos = (fechaTerminacion.Date - reserva.FechaInicio.Date).Days;
+                int diasRestantes = (fechaFinPactada.Date - fechaTerminacion.Date).Days;
+
+                decimal costoTotalRestante = diasRestantes * reserva.MontoDiario;
+                decimal multa = 0;
+
+                // si se cumplie menos de la mitad del tiempo entonces queda 50% del saldo restante sino el 25%
+                if (diasCumplidos < (diasTotales / 2.0))
+                {
+                    multa = Math.Round(costoTotalRestante * 0.50m, 2);
+                }
+                else
+                {
+                    multa = Math.Round(costoTotalRestante * 0.25m, 2);
+                }
+
+                try
+                {
+                    int usuarioId = ObtenerUsuarioActualId();
+                    _repoReserva.FinalizarConMulta(reserva.IdReserva, fechaTerminacion, multa, usuarioId);
+
+                    TempData["Success"] = $"Reserva finalizada exitosamente. Se aplicó y registró una multa de ${multa:N2}.";
+                    return RedirectToAction(nameof(Details), new { id = reserva.IdReserva });
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, "Error al procesar la finalización: " + ex.Message);
+                }
+            }
+
+            ViewBag.FechaFinPactada = fechaFinPactada;
+            return View(reserva);
+        }
+
+        public IActionResult Renovar(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var reservaAnterior = _repoReserva.ObtenerPorId(id.Value);
+            if (reservaAnterior == null) return NotFound();
+
+            var nuevaReserva = new Reserva
+            {
+                IdInmueble = reservaAnterior.IdInmueble,
+                IdInquilino = reservaAnterior.IdInquilino,
+                MontoDiario = reservaAnterior.MontoDiario,
+                FechaInicio = reservaAnterior.FechaFin,
+                FechaFin = reservaAnterior.FechaFin.AddDays(7),
+                Inmueble = reservaAnterior.Inmueble,
+                Inquilino = reservaAnterior.Inquilino
+            };
+
+            CargarListasDesplegables(nuevaReserva.IdInmueble, nuevaReserva.IdInquilino);
+            ViewBag.EsRenovacion = true;
+            ViewBag.IdReservaOrigen = reservaAnterior.IdReserva;
+
+            return View("Create", nuevaReserva);
+        }
     }
 }
