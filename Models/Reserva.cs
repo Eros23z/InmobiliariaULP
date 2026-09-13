@@ -71,5 +71,13 @@ namespace InmobiliariaULP.Models
         [NotMapped]
         [Display(Name = "Saldo Pendiente")]
         public decimal SaldoPendiente => (ImporteTotal + Multa) - TotalPagado;
+
+        [Display(Name = "Creado por")]
+        public int UsuarioCreaId { get; set; }
+
+        [Display(Name = "Terminado por")]
+        public int? UsuarioTerminaId { get; set; }
+        public Usuario? UsuarioCrea { get; set; }
+        public Usuario? UsuarioTermina { get; set; }
     }
 }

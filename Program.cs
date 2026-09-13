@@ -1,4 +1,5 @@
 using InmobiliariaULP.Repositories;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,16 @@ builder.Services.AddScoped<IRepositorioTipoInmueble, RepositorioTipoInmueble>();
 builder.Services.AddScoped<IRepositorioInmueble, RepositorioInmueble>();
 builder.Services.AddScoped<IRepositorioReserva, RepositorioReserva>();
 builder.Services.AddScoped<IRepositorioPago, RepositorioPago>();
+builder.Services.AddScoped<IRepositorioUsuario, RepositorioUsuario>();
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Usuarios/Login";
+        options.LogoutPath = "/Usuarios/Logout";
+        options.AccessDeniedPath = "/Home/Restringido";
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    });
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -25,6 +36,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();

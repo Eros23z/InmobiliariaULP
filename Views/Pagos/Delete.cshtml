@@ -7,7 +7,7 @@
 <h2 class="text-danger">Anular Registro de Pago</h2>
 <h5>¿Estás seguro de que deseas anular esta transacción?</h5>
 <div class="alert alert-danger py-2">
-    El registro no se borrará físicamente; quedará registrado como <strong>ANULADO</strong> y su importe se descontará del total cobrado[cite: 1].
+    El registro no se borrará físicamente; quedará registrado como <strong>ANULADO</strong> y su importe se descontará del total cobrado.
 </div>
 <hr />
 
@@ -18,7 +18,7 @@
             <dd class="col-sm-8">#@Model.IdPago</dd>
 
             <dt class="col-sm-4">Reserva</dt>
-            <dd class="col-sm-8">#@Model.IdReserva</dd>
+            <dd class="col-sm-8">#@(Model.Reserva?.Inmueble?.Direccion ?? "Sin direccion")</dd>
 
             <dt class="col-sm-4">Concepto</dt>
             <dd class="col-sm-8">@Model.Concepto</dd>

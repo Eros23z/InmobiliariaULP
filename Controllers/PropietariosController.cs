@@ -1,9 +1,11 @@
 ﻿using InmobiliariaULP.Models;
 using InmobiliariaULP.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InmobiliariaULP.Controllers
 {
+    [Authorize]
     public class PropietariosController : Controller
     {
         private readonly IRepositorioPropietario _repo;
@@ -74,6 +76,7 @@ namespace InmobiliariaULP.Controllers
             return View(propietario);
         }
 
+        [Authorize(Roles = "Administrador")]
         public IActionResult Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -83,6 +86,7 @@ namespace InmobiliariaULP.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Administrador")]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {

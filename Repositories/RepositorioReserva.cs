@@ -56,13 +56,17 @@ namespace InmobiliariaULP.Repositories
             using (var connection = new SqlConnection(_connectionString))
             {
                 string sql = @"
-                    SELECT r.IdReserva, r.FechaInicio, r.FechaFin, r.FechaFinOriginal, r.FechaTerminacion, 
-                           r.MontoDiario, r.Multa, r.Estado, r.IdInmueble, r.IdInquilino,
-                           i.Direccion, inq.Nombre, inq.Apellido
-                    FROM Reservas r
-                    INNER JOIN Inmuebles i ON r.IdInmueble = i.IdInmueble
-                    INNER JOIN Inquilinos inq ON r.IdInquilino = inq.IdInquilino
-                    WHERE r.IdReserva = @id;";
+                        SELECT r.IdReserva, r.FechaInicio, r.FechaFin, r.FechaFinOriginal, r.FechaTerminacion, 
+                                r.MontoDiario, r.Multa, r.Estado, r.IdInmueble, r.IdInquilino,
+                                i.Direccion, inq.Nombre, inq.Apellido,
+                                r.UsuarioCreaId, uc.Nombre, uc.Apellido, uc.Email,
+                                r.UsuarioTerminaId, ut.Nombre, ut.Apellido, ut.Email
+                        FROM Reservas r
+                        INNER JOIN Inmuebles i ON r.IdInmueble = i.IdInmueble
+                        INNER JOIN Inquilinos inq ON r.IdInquilino = inq.IdInquilino
+                        LEFT JOIN Usuarios uc ON r.UsuarioCreaId = uc.IdUsuario
+                        LEFT JOIN Usuarios ut ON r.UsuarioTerminaId = ut.IdUsuario
+                        WHERE r.IdReserva = @id;";
 
                 using (var command = new SqlCommand(sql, connection))
                 {
@@ -124,9 +128,9 @@ namespace InmobiliariaULP.Repositories
             using (var connection = new SqlConnection(_connectionString))
             {
                 string sql = @"
-                    INSERT INTO Reservas (FechaInicio, FechaFin, FechaFinOriginal, FechaTerminacion, MontoDiario, Multa, Estado, IdInmueble, IdInquilino)
-                    VALUES (@inicio, @fin, @finOrig, @term, @monto, @multa, @estado, @idInmueble, @idInquilino);
-                    SELECT SCOPE_IDENTITY();";
+                        INSERT INTO Reservas (FechaInicio, FechaFin, FechaFinOriginal, FechaTerminacion, MontoDiario, Multa, Estado, IdInmueble, IdInquilino, UsuarioCreaId)
+                        VALUES (@inicio, @fin, @finOrig, @term, @monto, @multa, @estado, @idInmueble, @idInquilino, @usuarioCreaId);
+                        SELECT SCOPE_IDENTITY();";
 
                 using (var command = new SqlCommand(sql, connection))
                 {
@@ -139,6 +143,7 @@ namespace InmobiliariaULP.Repositories
                     command.Parameters.AddWithValue("@estado", r.Estado ?? "Vigente");
                     command.Parameters.AddWithValue("@idInmueble", r.IdInmueble);
                     command.Parameters.AddWithValue("@idInquilino", r.IdInquilino);
+                    command.Parameters.AddWithValue("@usuarioCreaId", r.UsuarioCreaId > 0 ? r.UsuarioCreaId : 1);
 
                     connection.Open();
                     int nuevoId = Convert.ToInt32(command.ExecuteScalar());
@@ -200,14 +205,14 @@ namespace InmobiliariaULP.Repositories
                 {
                     try
                     {
-                        // 1. Actualizar el estado, fecha efectiva de corte y multa de la reserva
+                        // Actualizar el estado, fecha efectiva de corte y multa de la reserva
                         string sqlReserva = @"
-                    UPDATE Reservas
-                    SET FechaTerminacion = @fechaTerminacion,
-                        Multa = @multa,
-                        Estado = 'Finalizada'
-                    WHERE IdReserva = @idReserva;";
-
+                                        UPDATE Reservas
+                                        SET FechaTerminacion = @fechaTerminacion,
+                                            Multa = @multa,
+                                            Estado = 'Finalizada',
+                                            UsuarioTerminaId = @usuarioTerminaId
+                                        WHERE IdReserva = @idReserva;";
                         using (var cmdReserva = new SqlCommand(sqlReserva, connection, transaction))
                         {
                             cmdReserva.Parameters.AddWithValue("@fechaTerminacion", fechaTerminacion);
@@ -216,7 +221,7 @@ namespace InmobiliariaULP.Repositories
                             cmdReserva.ExecuteNonQuery();
                         }
 
-                        // 2. Impactar el cobro de la multa en Pagos si el importe es mayor a 0
+                        // Impactar el cobro de la multa en Pagos si el importe es mayor a 0
                         if (multa > 0)
                         {
                             string sqlPago = @"

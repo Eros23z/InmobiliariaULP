@@ -8,6 +8,22 @@ USE InmobiliariaDB;
 GO
 
 -- Tablas
+
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Usuarios')
+BEGIN
+    CREATE TABLE Usuarios (
+        IdUsuario INT IDENTITY(1,1) PRIMARY KEY,
+        Nombre VARCHAR(50) NOT NULL,
+        Apellido VARCHAR(50) NOT NULL,
+        Email VARCHAR(100) NOT NULL UNIQUE,
+        Clave VARCHAR(255) NOT NULL,
+        Rol VARCHAR(20) NOT NULL DEFAULT 'Empleado', 
+        Avatar VARCHAR(255) NULL,
+        Estado BIT NOT NULL DEFAULT 1
+    );
+END
+GO
+
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Propietarios')
 BEGIN
     CREATE TABLE Propietarios (
@@ -65,6 +81,17 @@ BEGIN
 END
 GO
 
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ImagenesInmueble')
+BEGIN
+    CREATE TABLE ImagenesInmueble (
+        IdImagen INT IDENTITY(1,1) PRIMARY KEY,
+        Url VARCHAR(255) NOT NULL,
+        IdInmueble INT NOT NULL,
+        CONSTRAINT FK_Imagenes_Inmuebles FOREIGN KEY (IdInmueble) REFERENCES Inmuebles(IdInmueble) ON DELETE CASCADE
+    );
+END
+GO
+
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Reservas')
 BEGIN
     CREATE TABLE Reservas (
@@ -75,11 +102,15 @@ BEGIN
         FechaTerminacion DATE NULL,
         MontoDiario DECIMAL(12, 2) NOT NULL,
         Multa DECIMAL(12, 2) NOT NULL DEFAULT 0.00,
-        Estado VARCHAR(30) NOT NULL DEFAULT 'Vigente',
+        Estado VARCHAR(30) NOT NULL DEFAULT 'Vigente', 
         IdInmueble INT NOT NULL,
         IdInquilino INT NOT NULL,
+        UsuarioCreaId INT NOT NULL DEFAULT 1,
+        UsuarioTerminaId INT NULL,
         CONSTRAINT FK_Reservas_Inmuebles FOREIGN KEY (IdInmueble) REFERENCES Inmuebles(IdInmueble),
-        CONSTRAINT FK_Reservas_Inquilinos FOREIGN KEY (IdInquilino) REFERENCES Inquilinos(IdInquilino)
+        CONSTRAINT FK_Reservas_Inquilinos FOREIGN KEY (IdInquilino) REFERENCES Inquilinos(IdInquilino),
+        CONSTRAINT FK_Reservas_UsuarioCrea FOREIGN KEY (UsuarioCreaId) REFERENCES Usuarios(IdUsuario),
+        CONSTRAINT FK_Reservas_UsuarioTermina FOREIGN KEY (UsuarioTerminaId) REFERENCES Usuarios(IdUsuario)
     );
 END
 GO
@@ -93,27 +124,24 @@ BEGIN
         Importe DECIMAL(12, 2) NOT NULL,
         Anulado BIT NOT NULL DEFAULT 0,
         IdReserva INT NOT NULL,
-        CONSTRAINT FK_Pagos_Reservas FOREIGN KEY (IdReserva) REFERENCES Reservas(IdReserva)
-    );
-END
-GO
-
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Usuarios')
-BEGIN
-    CREATE TABLE Usuarios (
-        IdUsuario INT IDENTITY(1,1) PRIMARY KEY,
-        Nombre VARCHAR(50) NOT NULL,
-        Apellido VARCHAR(50) NOT NULL,
-        Email VARCHAR(100) NOT NULL UNIQUE,
-        Clave VARCHAR(255) NOT NULL,
-        Rol VARCHAR(20) NOT NULL DEFAULT 'Empleado', -- 'Administrador' o 'Empleado'
-        Avatar VARCHAR(255) NULL,
-        Estado BIT NOT NULL DEFAULT 1
+        UsuarioCreaId INT NOT NULL DEFAULT 1,
+        UsuarioAnulaId INT NULL,
+        CONSTRAINT FK_Pagos_Reservas FOREIGN KEY (IdReserva) REFERENCES Reservas(IdReserva),
+        CONSTRAINT FK_Pagos_UsuarioCrea FOREIGN KEY (UsuarioCreaId) REFERENCES Usuarios(IdUsuario),
+        CONSTRAINT FK_Pagos_UsuarioAnula FOREIGN KEY (UsuarioAnulaId) REFERENCES Usuarios(IdUsuario)
     );
 END
 GO
 
 -- Carga de datos 
+IF NOT EXISTS (SELECT 1 FROM Usuarios)
+BEGIN
+    INSERT INTO Usuarios (Nombre, Apellido, Email, Clave, Rol, Estado) VALUES 
+    ('Administrador', 'General', 'admin@inmobiliaria.com', 'admin123', 'Administrador', 1),
+    ('Juan', 'Empleado', 'empleado@inmobiliaria.com', 'empleado123', 'Empleado', 1);
+END
+GO
+
 IF NOT EXISTS (SELECT 1 FROM Propietarios)
 BEGIN
     INSERT INTO Propietarios (Dni, Nombre, Apellido, Telefono, Email, Estado) VALUES 
@@ -148,34 +176,14 @@ GO
 
 IF NOT EXISTS (SELECT 1 FROM Reservas)
 BEGIN
-    INSERT INTO Reservas (FechaInicio, FechaFin, FechaFinOriginal, MontoDiario, Multa, Estado, IdInmueble, IdInquilino) VALUES 
-    ('2026-09-01', '2026-09-07', '2026-09-07', 45000.00, 0.00, 'Vigente', 1, 1);
+    INSERT INTO Reservas (FechaInicio, FechaFin, FechaFinOriginal, MontoDiario, Multa, Estado, IdInmueble, IdInquilino, UsuarioCreaId) VALUES 
+    ('2026-09-01', '2026-09-07', '2026-09-07', 45000.00, 0.00, 'Vigente', 1, 1, 1);
 END
 GO
 
 IF NOT EXISTS (SELECT 1 FROM Pagos)
 BEGIN
-    INSERT INTO Pagos (Concepto, FechaPago, Importe, Anulado, IdReserva)
-    VALUES 
-    ('Seña inicial 30%', GETDATE(), 13500.00, 0, 1);
-END
-GO
-
-IF NOT EXISTS (SELECT 1 FROM Propietarios)
-BEGIN
-    INSERT INTO Usuarios (Nombre, Apellido, Email, Clave, Rol, Estado)
-    VALUES 
-    ('Administrador', 'General', 'admin@inmobiliaria.com', 'admin123', 'Administrador', 1),
-    ('Juan', 'Empleado', 'empleado@inmobiliaria.com', 'empleado123', 'Empleado', 1);
-END
-GO
-
-IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Pagos') AND name = 'UsuarioCreaId')
-BEGIN
-    ALTER TABLE Pagos ADD UsuarioCreaId INT NOT NULL DEFAULT 1;
-    ALTER TABLE Pagos ADD UsuarioAnulaId INT NULL;
-
-    ALTER TABLE Pagos ADD CONSTRAINT FK_Pagos_UsuarioCrea FOREIGN KEY (UsuarioCreaId) REFERENCES Usuarios(IdUsuario);
-    ALTER TABLE Pagos ADD CONSTRAINT FK_Pagos_UsuarioAnula FOREIGN KEY (UsuarioAnulaId) REFERENCES Usuarios(IdUsuario);
+    INSERT INTO Pagos (Concepto, FechaPago, Importe, Anulado, IdReserva, UsuarioCreaId) VALUES 
+    ('Seña inicial 30%', GETDATE(), 13500.00, 0, 1, 1);
 END
 GO

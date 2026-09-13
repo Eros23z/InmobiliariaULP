@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using InmobiliariaULP.Models;
+﻿using InmobiliariaULP.Models;
 using InmobiliariaULP.Repositories;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace InmobiliariaULP.Controllers
 {
+    [Authorize]
     public class PagosController : Controller
     {
         private readonly IRepositorioPago _repoPago;
@@ -142,6 +144,7 @@ namespace InmobiliariaULP.Controllers
         }
 
         // GET: Pagos/Delete/5
+        [Authorize(Roles = "Administrador")]
         public IActionResult Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -152,8 +155,9 @@ namespace InmobiliariaULP.Controllers
             return View(pago);
         }
 
-        // POST: Pagos/Delete/5 (Baja lógica)
+        // POST: Pagos/Delete/5 
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Administrador")]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
@@ -176,7 +180,7 @@ namespace InmobiliariaULP.Controllers
             {
                 return idUsuario;
             }
-            return 1; 
+            throw new InvalidOperationException("No se encontró un usuario autenticado en la sesión actual.");
         }
     }
 }

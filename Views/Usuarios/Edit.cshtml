@@ -1,0 +1,54 @@
+﻿@model InmobiliariaULP.Models.Usuario
+
+@{
+    ViewData["Title"] = "Editar Usuario";
+}
+
+<h2>Editar Usuario #@Model.IdUsuario</h2>
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="IdUsuario" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Nombre" class="control-label"></label>
+                <input asp-for="Nombre" class="form-control" />
+                <span asp-validation-for="Nombre" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Apellido" class="control-label"></label>
+                <input asp-for="Apellido" class="form-control" />
+                <span asp-validation-for="Apellido" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Email" class="control-label"></label>
+                <input asp-for="Email" type="email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Rol" class="control-label"></label>
+                <select asp-for="Rol" class="form-select">
+                    <option value="Empleado">Empleado</option>
+                    <option value="Administrador">Administrador</option>
+                </select>
+                <span asp-validation-for="Rol" class="text-danger"></span>
+            </div>
+
+            <div class="form-check form-switch mb-4">
+                <input class="form-check-input" type="checkbox" asp-for="Estado" id="switchEstado">
+                <label class="form-check-label" for="switchEstado">Usuario Activo</label>
+            </div>
+
+            <div class="form-group d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                <a asp-action="Index" class="btn btn-secondary">Volver al Listado</a>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using InmobiliariaULP.Models;
+﻿using InmobiliariaULP.Models;
 using InmobiliariaULP.Repositories;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace InmobiliariaULP.Controllers
 {
+    [Authorize]
     public class ReservasController : Controller
     {
         private readonly IRepositorioReserva _repoReserva;
@@ -130,6 +132,8 @@ namespace InmobiliariaULP.Controllers
                 reserva.Estado = "Vigente";
 
                 _repoReserva.Alta(reserva);
+                reserva.UsuarioCreaId = ObtenerUsuarioActualId();
+
                 TempData["Success"] = "Reserva generada exitosamente.";
                 return RedirectToAction(nameof(Index));
             }
@@ -180,6 +184,7 @@ namespace InmobiliariaULP.Controllers
         }
 
         // GET: Reservas/Delete/5
+        [Authorize(Roles = "Administrador")]
         public IActionResult Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -192,6 +197,7 @@ namespace InmobiliariaULP.Controllers
 
         // POST: Reservas/Delete/5
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Administrador")]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
@@ -207,7 +213,7 @@ namespace InmobiliariaULP.Controllers
             {
                 return idUsuario;
             }
-            return 1;
+            throw new InvalidOperationException("No se encontró un usuario autenticado en la sesión actual.");
         }
 
         public IActionResult Finalizar(int? id)

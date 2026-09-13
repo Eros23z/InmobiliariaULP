@@ -70,17 +70,17 @@ namespace InmobiliariaULP.Repositories
             using (var connection = new SqlConnection(_connectionString))
             {
                 string sql = @"
-                    SELECT p.IdPago, p.Concepto, p.FechaPago, p.Importe, p.Anulado, p.IdReserva,
-                           inq.Nombre, inq.Apellido, i.Direccion,
-                           p.UsuarioCreaId, uc.Nombre, uc.Apellido, uc.Email,
-                           p.UsuarioAnulaId, ua.Nombre, ua.Apellido, ua.Email
-                    FROM Pagos p
-                    INNER JOIN Reservas r ON p.IdReserva = r.IdReserva
-                    INNER JOIN Inquilinos inq ON r.IdInquilino = inq.IdInquilino
-                    INNER JOIN Inmuebles i ON r.IdInmueble = i.IdInmueble
-                    INNER JOIN Usuarios uc ON p.UsuarioCreaId = uc.IdUsuario
-                    LEFT JOIN Usuarios ua ON p.UsuarioAnulaId = ua.IdUsuario
-                    WHERE p.IdPago = @id;";
+            SELECT p.IdPago, p.Concepto, p.FechaPago, p.Importe, p.Anulado, p.IdReserva,
+                   inq.Nombre, inq.Apellido, i.Direccion,
+                   p.UsuarioCreaId, uc.Nombre, uc.Apellido, uc.Email,
+                   p.UsuarioAnulaId, ua.Nombre, ua.Apellido, ua.Email
+            FROM Pagos p
+            INNER JOIN Reservas r ON p.IdReserva = r.IdReserva
+            INNER JOIN Inquilinos inq ON r.IdInquilino = inq.IdInquilino
+            INNER JOIN Inmuebles i ON r.IdInmueble = i.IdInmueble
+            LEFT JOIN Usuarios uc ON p.UsuarioCreaId = uc.IdUsuario
+            LEFT JOIN Usuarios ua ON p.UsuarioAnulaId = ua.IdUsuario
+            WHERE p.IdPago = @id;";
 
                 using (var command = new SqlCommand(sql, connection))
                 {
@@ -101,11 +101,18 @@ namespace InmobiliariaULP.Repositories
                                 Reserva = new Reserva
                                 {
                                     IdReserva = reader.GetInt32(5),
-                                    Inquilino = new Inquilino { Nombre = reader.GetString(6), Apellido = reader.GetString(7) },
-                                    Inmueble = new Inmueble { Direccion = reader.GetString(8) }
+                                    Inquilino = new Inquilino
+                                    {
+                                        Nombre = reader.GetString(6),
+                                        Apellido = reader.GetString(7)
+                                    },
+                                    Inmueble = new Inmueble
+                                    {
+                                        Direccion = reader.GetString(8)
+                                    }
                                 },
-                                UsuarioCreaId = reader.GetInt32(9),
-                                UsuarioCrea = new Usuario
+                                UsuarioCreaId = reader.IsDBNull(9) ? 0 : reader.GetInt32(9),
+                                UsuarioCrea = reader.IsDBNull(9) || reader.IsDBNull(10) ? null : new Usuario
                                 {
                                     IdUsuario = reader.GetInt32(9),
                                     Nombre = reader.GetString(10),
@@ -113,7 +120,7 @@ namespace InmobiliariaULP.Repositories
                                     Email = reader.GetString(12)
                                 },
                                 UsuarioAnulaId = reader.IsDBNull(13) ? (int?)null : reader.GetInt32(13),
-                                UsuarioAnula = reader.IsDBNull(13) ? null : new Usuario
+                                UsuarioAnula = reader.IsDBNull(13) || reader.IsDBNull(14) ? null : new Usuario
                                 {
                                     IdUsuario = reader.GetInt32(13),
                                     Nombre = reader.GetString(14),

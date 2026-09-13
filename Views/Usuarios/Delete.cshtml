@@ -1,0 +1,39 @@
+﻿@model InmobiliariaULP.Models.Usuario
+
+@{
+    ViewData["Title"] = "Eliminar Usuario";
+}
+
+<h2>Dar de Baja Usuario</h2>
+<hr />
+
+<div class="card shadow-sm border-danger col-md-6">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Confirmar Desactivación</h5>
+    </div>
+    <div class="card-body">
+        <p class="lead">¿Está seguro de que desea inhabilitar a este usuario del sistema?</p>
+        <dl class="row">
+            <dt class="col-sm-4">Nombre Completo:</dt>
+            <dd class="col-sm-8">@Model.NombreCompleto</dd>
+
+            <dt class="col-sm-4">Correo Electrónico:</dt>
+            <dd class="col-sm-8">@Model.Email</dd>
+
+            <dt class="col-sm-4">Rol Asignado:</dt>
+            <dd class="col-sm-8"><span class="badge bg-secondary">@Model.Rol</span></dd>
+        </dl>
+        <div class="alert alert-warning py-2 mb-0">
+            <small>
+                Esta acción realiza una <strong>baja lógica</strong>. El usuario no podrá volver a iniciar sesión, pero sus registros en auditoría de cobros y reservas permanecerán intactos.
+            </small>
+        </div>
+    </div>
+    <div class="card-footer bg-transparent d-flex gap-2">
+        <form asp-action="Delete" method="post">
+            <input type="hidden" name="id" value="@Model.IdUsuario" />
+            <button type="submit" class="btn btn-danger">Confirmar Baja</button>
+        </form>
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </div>
+</div>
