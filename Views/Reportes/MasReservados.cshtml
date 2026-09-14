@@ -1,0 +1,39 @@
+﻿@model IEnumerable<InmobiliariaULP.Models.InmuebleConReservasVM>
+
+@{
+    ViewData["Title"] = "Inmuebles Más Solicitados";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Inmuebles con Mayor Demanda (Últimos 365 días)</h2>
+    <a asp-action="Index" class="btn btn-secondary">Volver al Panel</a>
+</div>
+
+<div class="table-responsive shadow-sm rounded">
+    <table class="table table-hover align-middle mb-0 bg-white">
+        <thead class="table-dark">
+            <tr>
+                <th>Ranking</th>
+                <th>Inmueble</th>
+                <th>Tipo</th>
+                <th>Dueño</th>
+                <th class="text-center">Total Reservas (Año)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int posicion = 1;
+            }
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td><span class="badge bg-primary rounded-pill">#@(posicion++)</span></td>
+                    <td><strong>@item.Inmueble.Direccion</strong></td>
+                    <td>@item.Inmueble.TipoInmueble?.Descripcion</td>
+                    <td>@item.Inmueble.Propietario?.Apellido, @item.Inmueble.Propietario?.Nombre</td>
+                    <td class="text-center fw-bold fs-6 text-success">@item.CantidadReservas</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

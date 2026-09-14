@@ -1,0 +1,47 @@
+﻿@model IEnumerable<InmobiliariaULP.Models.Inmueble>
+
+@{
+    ViewData["Title"] = "Inmuebles por Estado";
+    bool? disp = ViewBag.Disponible;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Inmuebles por Disponibilidad</h2>
+    <a asp-action="Index" class="btn btn-secondary">Volver al Panel</a>
+</div>
+
+<div class="btn-group mb-3" role="group">
+    <a asp-action="InmueblesPorDisponibilidad" class="btn @(disp == null ? "btn-dark" : "btn-outline-dark")">Todos</a>
+    <a asp-action="InmueblesPorDisponibilidad" asp-route-disponible="true" class="btn @(disp == true ? "btn-success" : "btn-outline-success")">Disponibles</a>
+    <a asp-action="InmueblesPorDisponibilidad" asp-route-disponible="false" class="btn @(disp == false ? "btn-danger" : "btn-outline-danger")">No Disponibles</a>
+</div>
+
+<div class="table-responsive shadow-sm rounded">
+    <table class="table table-hover align-middle mb-0 bg-white">
+        <thead class="table-dark">
+            <tr>
+                <th>Dirección</th>
+                <th>Tipo</th>
+                <th>Dueño</th>
+                <th>Teléfono Dueño</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Direccion</td>
+                    <td>@item.TipoInmueble?.Descripcion</td>
+                    <td>@item.Propietario?.Apellido, @item.Propietario?.Nombre</td>
+                    <td>@item.Propietario?.Telefono</td>
+                    <td>
+                        <span class="badge @(item.Disponible ? "bg-success" : "bg-danger")">
+                            @(item.Disponible ? "Disponible" : "No disponible")
+                        </span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

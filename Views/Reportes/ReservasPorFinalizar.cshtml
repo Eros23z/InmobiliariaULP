@@ -1,0 +1,60 @@
+﻿@model IEnumerable<InmobiliariaULP.Models.Reserva>
+
+@{
+    ViewData["Title"] = "Reservas Próximas a Concluir";
+    int dias = ViewBag.Dias ?? 7;
+}
+
+<h2>Reservas Próximas a Finalizar</h2>
+<hr />
+
+<form asp-action="ReservasPorFinalizar" method="get" class="row g-3 align-items-end mb-4">
+    <div class="col-md-4">
+        <label class="form-label fw-bold">Finalizan dentro de los próximos:</label>
+        <div class="input-group">
+            <input type="number" name="dias" class="form-control" value="@dias" min="1" max="90" />
+            <span class="input-group-text">días</span>
+        </div>
+    </div>
+    <div class="col-md-4 d-flex gap-2">
+        <button type="submit" class="btn btn-danger"><i class="bi bi-hourglass-split"></i> Filtrar</button>
+        <a asp-action="Index" class="btn btn-secondary">Volver</a>
+    </div>
+</form>
+
+<div class="table-responsive shadow-sm rounded">
+    <table class="table table-hover align-middle mb-0 bg-white">
+        <thead class="table-dark">
+            <tr>
+                <th>N°</th>
+                <th>Inmueble</th>
+                <th>Inquilino</th>
+                <th>Fecha de Salida</th>
+                <th>Días Restantes</th>
+                <th class="text-end">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                int diasFaltantes = (item.FechaFin.Date - DateTime.Today).Days;
+                <tr>
+                    <td>#@item.IdReserva</td>
+                    <td>@item.Inmueble?.Direccion</td>
+                    <td>@item.Inquilino?.Apellido, @item.Inquilino?.Nombre</td>
+                    <td><strong>@item.FechaFin.ToString("dd/MM/yyyy")</strong></td>
+                    <td>
+                        <span class="badge @(diasFaltantes <= 2 ? "bg-danger" : "bg-warning text-dark")">
+                            @(diasFaltantes == 0 ? "Finaliza hoy" : $"En {diasFaltantes} días")
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <a asp-controller="Reservas" asp-action="Renovar" asp-route-id="@item.IdReserva" class="btn btn-sm btn-outline-success">
+                            Renovar
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

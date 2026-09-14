@@ -1,0 +1,100 @@
+﻿@{
+    ViewData["Title"] = "Panel de Informes y Consultas";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Informes y Consultas Avanzadas</h2>
+</div>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    <!-- Por disponibilidad -->
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0 border-start border-4 border-primary">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-building-check text-primary"></i> Inmuebles por Estado</h5>
+                <p class="card-text text-muted">Listado de inmuebles con sus dueños, filtrables por disponibilidad para alquiler.</p>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a asp-action="InmueblesPorDisponibilidad" class="btn btn-outline-primary btn-sm w-100">Consultar</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Por propietario -->
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0 border-start border-4 border-primary">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-person-badge text-primary"></i> Inmuebles de Propietario</h5>
+                <p class="card-text text-muted">Consulta filtrada por el dueño del inmueble.</p>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a asp-action="InmueblesPorPropietario" class="btn btn-outline-primary btn-sm w-100">Consultar</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mas Reservados -->
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0 border-start border-4 border-success">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-graph-up-arrow text-success"></i> Inmuebles Más Reservados</h5>
+                <p class="card-text text-muted">Inmuebles con mayor volumen de reservas en los últimos 365 días.</p>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a asp-action="MasReservados" class="btn btn-outline-success btn-sm w-100">Consultar</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sin Reservas -->
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0 border-start border-4 border-warning">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-clock-history text-warning"></i> Inmuebles Sin Actividad</h5>
+                <p class="card-text text-muted">Propiedades sin reservas registradas en los últimos X días configurables.</p>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a asp-action="SinReservas" class="btn btn-outline-warning btn-sm w-100">Consultar</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reservas en rango -->
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0 border-start border-4 border-info">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-calendar-range text-info"></i> Reservas en Rango</h5>
+                <p class="card-text text-muted">Reservas vigentes dentro de un período de fechas seleccionable.</p>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a asp-action="ReservasVigentes" class="btn btn-outline-info btn-sm w-100">Consultar</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Proximos a vencer -->
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0 border-start border-4 border-danger">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-hourglass-bottom text-danger"></i> Próximas a Finalizar</h5>
+                <p class="card-text text-muted">Reservas con fecha de salida dentro de los próximos X días.</p>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a asp-action="ReservasPorFinalizar" class="btn btn-outline-danger btn-sm w-100">Consultar</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Buscador de disponibles -->
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0 border-start border-4 border-dark">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-search text-dark"></i> Buscador de Disponibilidad</h5>
+                <p class="card-text text-muted">Inmuebles libres y disponibles sin reservas solapadas entre dos fechas dadas.</p>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a asp-action="Disponibilidad" class="btn btn-outline-dark btn-sm w-100">Buscar Disponibles</a>
+            </div>
+        </div>
+    </div>
+</div>

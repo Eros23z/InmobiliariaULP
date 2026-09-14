@@ -1,0 +1,56 @@
+﻿@model IEnumerable<InmobiliariaULP.Models.Inmueble>
+
+@{
+    ViewData["Title"] = "Inmuebles de un Propietario";
+}
+
+<h2>Inmuebles por Propietario</h2>
+<hr />
+
+<form asp-action="InmueblesPorPropietario" method="get" class="row g-3 align-items-end mb-4">
+    <div class="col-md-6">
+        <label class="form-label fw-bold">Seleccione un Propietario:</label>
+        <select name="idPropietario" class="form-select" asp-items="ViewBag.Propietarios" onchange="this.form.submit()">
+            <option value="">-- Seleccione un propietario --</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <a asp-action="Index" class="btn btn-secondary">Volver</a>
+    </div>
+</form>
+
+<div class="table-responsive shadow-sm rounded">
+    <table class="table table-hover align-middle mb-0 bg-white">
+        <thead class="table-dark">
+            <tr>
+                <th>Dirección</th>
+                <th>Tipo</th>
+                <th>Cupo</th>
+                <th>Precio / Día</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-3">Seleccione un propietario para listar sus inmuebles asociados.</td>
+                </tr>
+            }
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Direccion</td>
+                    <td>@item.TipoInmueble?.Descripcion</td>
+                    <td>@item.Cupo</td>
+                    <td>$@item.PrecioPorDia.ToString("N2")</td>
+                    <td>
+                        <span class="badge @(item.Disponible ? "bg-success" : "bg-danger")">
+                            @(item.Disponible ? "Disponible" : "No disponible")
+                        </span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
