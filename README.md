@@ -10,6 +10,15 @@
 
 ---
 
+## Credenciales de Acceso
+
+| Rol | Correo Electrónico | Contraseña | Permisos Principales |
+| :--- | :--- | :--- | :--- |
+| **Administrador** | `admin@inmobiliaria.com` | `admin123` | Control total, gestión de usuarios, auditoría en detalles y eliminación de entidades. |
+| **Empleado** | `empleado@inmobiliaria.com` | `empleado123` | Operaciones de gestión, reservas, cobros, consultas y edición de perfil propio. |
+
+---
+
 ## Modelado de Datos
 
 A continuación se presenta el esquema relacional del modelo de datos de la aplicación:
