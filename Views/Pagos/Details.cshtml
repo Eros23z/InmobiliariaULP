@@ -32,7 +32,7 @@
         </div>
 
         @* Auditoria para Administradores *@
-        @if (User.IsInRole("Administrador") || !User.Identity.IsAuthenticated)
+        @if (User.IsInRole("Administrador"))
         {
             <div class="alert alert-secondary mt-3 mb-0 py-2">
                 <h6 class="alert-heading mb-1"><i class="bi bi-shield-lock"></i> Datos de Auditoría</h6>
@@ -52,7 +52,10 @@
         @if (!Model.Anulado)
         {
             <a asp-action="Edit" asp-route-id="@Model.IdPago" class="btn btn-warning">Editar Concepto</a>
-            <a asp-action="Delete" asp-route-id="@Model.IdPago" class="btn btn-danger">Anular Pago</a>
+            @if (User.IsInRole("Administrador"))
+            {
+                <a asp-action="Delete" asp-route-id="@Model.IdPago" class="btn btn-danger">Anular Pago</a>
+            }
         }
         <a asp-action="Index" asp-route-idReserva="@Model.IdReserva" class="btn btn-secondary">Volver</a>
     </div>

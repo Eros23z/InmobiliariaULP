@@ -89,7 +89,23 @@ namespace InmobiliariaULP.Repositories
                                 IdInmueble = reader.GetInt32(8),
                                 IdInquilino = reader.GetInt32(9),
                                 Inmueble = new Inmueble { IdInmueble = reader.GetInt32(8), Direccion = reader.GetString(10) },
-                                Inquilino = new Inquilino { IdInquilino = reader.GetInt32(9), Nombre = reader.GetString(11), Apellido = reader.GetString(12) }
+                                Inquilino = new Inquilino { IdInquilino = reader.GetInt32(9), Nombre = reader.GetString(11), Apellido = reader.GetString(12) },
+                                UsuarioCreaId = reader.IsDBNull(13) ? 0 : reader.GetInt32(13),
+                                UsuarioCrea = reader.IsDBNull(13) || reader.IsDBNull(14) ? null : new Usuario
+                                {
+                                    IdUsuario = reader.GetInt32(13),
+                                    Nombre = reader.GetString(14),
+                                    Apellido = reader.GetString(15),
+                                    Email = reader.GetString(16)
+                                },
+                                UsuarioTerminaId = reader.IsDBNull(17) ? (int?)null : reader.GetInt32(17),
+                                UsuarioTermina = reader.IsDBNull(17) || reader.IsDBNull(18) ? null : new Usuario
+                                {
+                                    IdUsuario = reader.GetInt32(17),
+                                    Nombre = reader.GetString(18),
+                                    Apellido = reader.GetString(19),
+                                    Email = reader.GetString(20)
+                                }
                             };
                         }
                     }
@@ -103,13 +119,12 @@ namespace InmobiliariaULP.Repositories
             using (var connection = new SqlConnection(_connectionString))
             {
                 string sql = @"
-                    SELECT COUNT(*)
-                    FROM Reservas
-                    WHERE IdInmueble = @idInmueble
-                      AND Estado != 'Anulada'
-                      AND (@idReserva IS NULL OR IdReserva != @idReserva)
-                      AND (FechaInicio < @fin AND FechaFin > @inicio);";
-
+                        SELECT COUNT(*)
+                        FROM Reservas
+                        WHERE IdInmueble = @idInmueble
+                            AND Estado != 'Anulada'
+                            AND (@idReserva IS NULL OR IdReserva != @idReserva)
+                            AND (FechaInicio < @fin AND ISNULL(FechaTerminacion, FechaFin) > @inicio);";
                 using (var command = new SqlCommand(sql, connection))
                 {
                     command.Parameters.AddWithValue("@idInmueble", idInmueble);

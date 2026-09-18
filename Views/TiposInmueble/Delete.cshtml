@@ -20,8 +20,8 @@
     </div>
 </div>
 
-<form asp-action="Delete">
-    <input type="hidden" asp-for="IdTipoInmueble" />
+<form asp-action="Delete" asp-route-id="@Model.IdTipoInmueble" method="post">
+    <input type="hidden" name="id" value="@Model.IdTipoInmueble" />
     <button type="submit" class="btn btn-danger">Confirmar Eliminación</button>
     <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
 </form>

@@ -11,6 +11,7 @@ builder.Services.AddScoped<IRepositorioReserva, RepositorioReserva>();
 builder.Services.AddScoped<IRepositorioPago, RepositorioPago>();
 builder.Services.AddScoped<IRepositorioUsuario, RepositorioUsuario>();
 builder.Services.AddScoped<IRepositorioReporte, RepositorioReporte>();
+builder.Services.AddScoped<IRepositorioImagenInmueble, RepositorioImagenInmueble>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -35,6 +36,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthentication();
@@ -47,5 +49,37 @@ app.MapControllerRoute(
     pattern: "{controller=Inmuebles}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+// utilizo este bloque para generar los usuarios con contraseña hasheada
+
+using (var scope = app.Services.CreateScope())
+{
+    var repoUsuario = scope.ServiceProvider.GetRequiredService<IRepositorioUsuario>();
+
+    if (repoUsuario.ObtenerPorEmail("admin@inmobiliaria.com") == null)
+    {
+        repoUsuario.Alta(new InmobiliariaULP.Models.Usuario
+        {
+            Nombre = "Administrador",
+            Apellido = "General",
+            Email = "admin@inmobiliaria.com",
+            Clave = "admin123",
+            Rol = "Administrador",
+            Estado = true
+        });
+    }
+
+    if (repoUsuario.ObtenerPorEmail("empleado@inmobiliaria.com") == null)
+    {
+        repoUsuario.Alta(new InmobiliariaULP.Models.Usuario
+        {
+            Nombre = "Juan",
+            Apellido = "Empleado",
+            Email = "empleado@inmobiliaria.com",
+            Clave = "empleado123",
+            Rol = "Empleado",
+            Estado = true
+        });
+    }
+}
 
 app.Run();

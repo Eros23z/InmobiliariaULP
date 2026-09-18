@@ -31,6 +31,7 @@ namespace InmobiliariaULP.Models
         public decimal Longitud { get; set; }
 
         [Required(ErrorMessage = "El precio por dia es obligatorio.")]
+        [Range(1, 10000000, ErrorMessage = "El precio diario debe ser mayor a 0.")]
         [DataType(DataType.Currency)]
         [Display(Name = "Precio por Dia")]
         public decimal PrecioPorDia { get; set; }

@@ -9,9 +9,10 @@
 
 <div class="row">
     <div class="col-md-8">
-        <form asp-action="Edit">
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
             <input type="hidden" asp-for="IdInmueble" />
+            <input type="hidden" asp-for="ImagenPortada" />
 
             <div class="row mb-3">
                 <div class="col-md-8">
@@ -71,10 +72,17 @@
                 </div>
             </div>
 
-            <div class="mb-3">
-                <label asp-for="ImagenPortada" class="form-label"></label>
-                <input asp-for="ImagenPortada" class="form-control" />
-                <span asp-validation-for="ImagenPortada" class="text-danger"></span>
+            <div class="form-group mb-3">
+                <label class="control-label fw-bold">Imagen de Portada</label>
+                <input type="file" name="imagenPortadaFile" accept="image/*" class="form-control" />
+                <small class="text-muted">Seleccione una nueva imagen solo si desea reemplazar la actual.</small>
+                @if (!string.IsNullOrEmpty(Model?.ImagenPortada))
+                {
+                    <div class="mt-2 d-flex align-items-center gap-2">
+                        <img src="@Model.ImagenPortada" class="img-thumbnail" width="120" style="height: 80px; object-fit: cover;" alt="Portada actual" />
+                        <span class="text-muted small">Portada actual</span>
+                    </div>
+                }
             </div>
 
             <div class="form-check mb-3">

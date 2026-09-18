@@ -34,20 +34,29 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model)
+            @if (!Model.Any())
             {
                 <tr>
-                    <td>@item.Direccion</td>
-                    <td>@item.TipoInmueble?.Descripcion</td>
-                    <td>@item.Propietario?.Apellido, @item.Propietario?.Nombre</td>
-                    <td>$@item.PrecioPorDia.ToString("N2")</td>
-                    <td>
-                        <span class="badge @(item.Disponible ? "bg-success" : "bg-danger")">
-                            @(item.Disponible ? "Habilitado" : "Deshabilitado")
-                        </span>
-                    </td>
+                    <td colspan="5" class="text-center text-muted py-3">Todos los inmuebles registraron actividad en el período consultado.</td>
                 </tr>
+            }else
+            {
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Direccion</td>
+                        <td>@item.TipoInmueble?.Descripcion</td>
+                        <td>@item.Propietario?.Apellido, @item.Propietario?.Nombre</td>
+                        <td>$@item.PrecioPorDia.ToString("N2")</td>
+                        <td>
+                            <span class="badge @(item.Disponible ? "bg-success" : "bg-danger")">
+                                @(item.Disponible ? "Habilitado" : "Deshabilitado")
+                            </span>
+                        </td>
+                    </tr>
+                }
             }
+            
         </tbody>
     </table>
 </div>

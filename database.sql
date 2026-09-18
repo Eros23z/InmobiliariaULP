@@ -7,6 +7,16 @@ GO
 USE InmobiliariaDB;
 GO
 
+DROP TABLE IF EXISTS Pagos;
+DROP TABLE IF EXISTS Reservas;
+DROP TABLE IF EXISTS ImagenesInmueble;
+DROP TABLE IF EXISTS Inmuebles;
+DROP TABLE IF EXISTS TiposInmueble;
+DROP TABLE IF EXISTS Inquilinos;
+DROP TABLE IF EXISTS Propietarios;
+DROP TABLE IF EXISTS Usuarios;
+GO
+
 -- Tablas
 
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Usuarios')

@@ -25,7 +25,7 @@
         <form asp-action="Finalizar" method="post">
             @Html.AntiForgeryToken()
             <input type="hidden" name="id" value="@Model.IdReserva" />
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
 
             <div class="card shadow-sm">
                 <div class="card-header bg-dark text-white">
@@ -42,17 +42,25 @@
                         <span class="text-muted small">Debe ser anterior al @fechaPactada.ToString("dd/MM/yyyy").</span>
                     </div>
 
-                    <div class="alert alert-info py-2">
+                    <div class="alert alert-warning py-2 mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Multa calculada a cobrar:</span>
+                            <span class="h4 text-danger mb-0 fw-bold">$<span id="lblMulta">0.00</span></span>
+                        </div>
+                        <small class="text-muted" id="lblDetalleCalculo"></small>
+                    </div>
+
+                    <div class="alert alert-info py-2 mb-0">
                         <small>
                             <strong>Regla de Penalización:</strong><br />
-                            • Menos del 50% del plazo transcurrido: 50% de los días restantes.<br />
-                            • 50% o más del plazo transcurrido: 25% de los días restantes.<br />
+                            • Menos del 50% del plazo cumplido: 50% del saldo de días restantes.<br />
+                            • 50% o más del plazo cumplido: 25% del saldo de días restantes.<br />
                             El cobro se asentará automáticamente en la cuenta de pagos.
                         </small>
                     </div>
                 </div>
                 <div class="card-footer d-flex gap-2">
-                    <button type="submit" class="btn btn-danger" onclick="return confirm('¿Confirma la rescisión anticipada y la emisión de la multa?');">
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('¿Confirma la rescisión anticipada y el cobro inmediato de la multa?');">
                         Confirmar y Cobrar Multa
                     </button>
                     <a asp-action="Details" asp-route-id="@Model.IdReserva" class="btn btn-secondary">Cancelar</a>
@@ -61,3 +69,44 @@
         </form>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        const inputCorte = document.getElementById('fechaTerminacion');
+        const lblMulta = document.getElementById('lblMulta');
+        const lblDetalle = document.getElementById('lblDetalleCalculo');
+
+        const fInicio = new Date('@Model.FechaInicio.ToString("yyyy-MM-dd")');
+        const fFinOriginal = new Date('@fechaPactada.ToString("yyyy-MM-dd")');
+        const tarifaDiaria = @Model.MontoDiario.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+        function calcularMultaUI() {
+            const fCorte = new Date(inputCorte.value);
+            const msPorDia = 1000 * 60 * 60 * 24;
+
+            const diasTotales = Math.max(1, Math.round((fFinOriginal - fInicio) / msPorDia));
+            const diasCumplidos = Math.round((fCorte - fInicio) / msPorDia);
+            const diasRestantes = Math.round((fFinOriginal - fCorte) / msPorDia);
+
+            if (diasRestantes <= 0 || diasCumplidos < 0) {
+                lblMulta.textContent = "0.00";
+                lblDetalle.textContent = "Rango de fechas inválido";
+                return;
+            }
+
+            const saldoRestante = diasRestantes * tarifaDiaria;
+            let porcentaje = 0.25;
+
+            if (diasCumplidos < (diasTotales / 2.0)) {
+                porcentaje = 0.50;
+            }
+
+            const multa = saldoRestante * porcentaje;
+            lblMulta.textContent = multa.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            lblDetalle.textContent = `${(porcentaje * 100)}% de penalización sobre ${diasRestantes} días restantes no utilizados ($${saldoRestante.toLocaleString('es-AR', { minimumFractionDigits: 2 })})`;
+        }
+
+        inputCorte.addEventListener('change', calcularMultaUI);
+        calcularMultaUI();
+    </script>
+}

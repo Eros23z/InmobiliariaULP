@@ -90,8 +90,15 @@ namespace InmobiliariaULP.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
-            _repo.Baja(id);
-            TempData["Success"] = "Propietario eliminado correctamente.";
+            try
+            {
+                _repo.Baja(id);
+                TempData["Success"] = "Propietario eliminado correctamente.";
+            }
+            catch (Exception)
+            {
+                TempData["Error"] = "No se puede eliminar el propietario porque tiene inmuebles asociados a su nombre.";
+            }
             return RedirectToAction(nameof(Index));
         }
     }

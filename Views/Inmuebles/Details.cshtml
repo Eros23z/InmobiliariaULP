@@ -15,6 +15,12 @@
                 <span class="badge bg-light text-dark">@Model.TipoInmueble?.Descripcion</span>
             </div>
             <div class="card-body">
+                @if (!string.IsNullOrEmpty(Model.ImagenPortada))
+                {
+                    <div class="text-center mb-3">
+                        <img src="@Model.ImagenPortada" class="img-fluid rounded shadow-sm" style="max-height: 250px; width: 100%; object-fit: cover;" alt="Portada Inmueble" />
+                    </div>
+                }
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <strong>Propietario:</strong> @Model.Propietario?.Apellido, @Model.Propietario?.Nombre <br />
@@ -50,6 +56,7 @@
                 <a asp-action="Edit" asp-route-id="@Model.IdInmueble" class="btn btn-warning">Editar</a>
                 <a asp-controller="Reservas" asp-action="Create" class="btn btn-success">Crear Reserva Aquí</a>
                 <a asp-action="Index" class="btn btn-secondary">Volver al listado</a>
+                <a asp-action="Galeria" asp-route-id="@Model.IdInmueble" class="btn btn-info text-white"> Ver Galería</a>
             </div>
         </div>
     </div>

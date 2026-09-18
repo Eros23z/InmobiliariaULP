@@ -91,7 +91,11 @@
                         <td class="text-end">
                             <a asp-action="Edit" asp-route-id="@item.IdInmueble" class="btn btn-sm btn-outline-warning">Editar</a>
                             <a asp-action="Details" asp-route-id="@item.IdInmueble" class="btn btn-sm btn-outline-info">Detalles</a>
-                            <a asp-action="Delete" asp-route-id="@item.IdInmueble" class="btn btn-sm btn-outline-danger">Eliminar</a>
+                            @if (User.IsInRole("Administrador"))
+                            {
+                                <a asp-action="Delete" asp-route-id="@item.IdInmueble" class="btn btn-sm btn-outline-danger">Eliminar</a>
+                            }
+                            <a asp-action="Galeria" asp-route-id="@item.IdInmueble" class="btn btn-sm btn-outline-info" title="Fotos Secundarias"><i class="bi bi-images"></i></a>
                         </td>
                     </tr>
                 }

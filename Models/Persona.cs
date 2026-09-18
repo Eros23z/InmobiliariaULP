@@ -5,17 +5,17 @@ namespace InmobiliariaULP.Models
     public abstract class Persona
     {
         [Required(ErrorMessage = "El DNI es obligatorio.")]
-        [StringLength(20, ErrorMessage = "El DNI no puede superar los 20 caracteres.")]
+        [RegularExpression(@"^\d{7,8}$", ErrorMessage = "El DNI debe contener 7 u 8 dígitos numéricos.")]
         [Display(Name = "DNI")]
         public string Dni { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El nombre es obligatorio.")]
-        [StringLength(50)]
+        [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$", ErrorMessage = "El nombre solo puede contener letras.")]
         [Display(Name = "Nombre")]
         public string Nombre { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El apellido es obligatorio.")]
-        [StringLength(50)]
+        [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$", ErrorMessage = "El apellido solo puede contener letras.")]
         [Display(Name = "Apellido")]
         public string Apellido { get; set; } = string.Empty;
 

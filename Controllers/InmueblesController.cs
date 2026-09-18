@@ -12,15 +12,21 @@ namespace InmobiliariaULP.Controllers
         private readonly IRepositorioInmueble _repoInmueble;
         private readonly IRepositorioPropietario _repoPropietario;
         private readonly IRepositorioTipoInmueble _repoTipoInmueble;
+        private readonly IRepositorioImagenInmueble _repoImagen;
+        private readonly IWebHostEnvironment _environment;
 
         public InmueblesController(
             IRepositorioInmueble repoInmueble,
             IRepositorioPropietario repoPropietario,
-            IRepositorioTipoInmueble repoTipoInmueble)
+            IRepositorioTipoInmueble repoTipoInmueble,
+            IRepositorioImagenInmueble repoImagen,
+            IWebHostEnvironment environment)
         {
             _repoInmueble = repoInmueble;
             _repoPropietario = repoPropietario;
             _repoTipoInmueble = repoTipoInmueble;
+            _repoImagen = repoImagen;
+            _environment = environment;
         }
 
         private void CargarListasDesplegables(int? idPropietario = null, int? idTipo = null)
@@ -78,12 +84,21 @@ namespace InmobiliariaULP.Controllers
         // POST: Inmuebles/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create([Bind("IdInmueble,Direccion,Cupo,Latitud,Longitud,PrecioPorDia,PorcentajeReserva,Disponible,ImagenPortada,IdPropietario,IdTipoInmueble")] Inmueble inmueble)
+        public IActionResult Create([Bind("IdInmueble,Direccion,Cupo,Latitud,Longitud,PrecioPorDia,PorcentajeReserva,Disponible,ImagenPortada,IdPropietario,IdTipoInmueble")] Inmueble inmueble, IFormFile? imagenPortadaFile)
         {
             if (ModelState.IsValid)
             {
+                if (imagenPortadaFile != null)
+                {
+                    string? rutaRelativa = GuardarArchivo(imagenPortadaFile, "inmuebles");
+                    if (rutaRelativa != null)
+                    {
+                        inmueble.ImagenPortada = rutaRelativa;
+            }
+                }
+
                 _repoInmueble.Alta(inmueble);
-                TempData["Success"] = "Inmueble publicado exitosamente.";
+                TempData["Success"] = "Inmueble registrado correctamente.";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -106,18 +121,32 @@ namespace InmobiliariaULP.Controllers
         // POST: Inmuebles/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, [Bind("IdInmueble,Direccion,Cupo,Latitud,Longitud,PrecioPorDia,PorcentajeReserva,Disponible,ImagenPortada,IdPropietario,IdTipoInmueble")] Inmueble inmueble)
+        public IActionResult Edit(int id, [Bind("IdInmueble,Direccion,Cupo,Latitud,Longitud,PrecioPorDia,PorcentajeReserva,Disponible,ImagenPortada,IdPropietario,IdTipoInmueble")] Inmueble inmueble, IFormFile? imagenPortadaFile)
         {
-            if (id != inmueble.IdInmueble) return NotFound();
+            if (id != inmueble.IdInmueble) return NotFound(); 
 
             if (ModelState.IsValid)
             {
+                if (imagenPortadaFile != null)
+                {
+                    string? nuevaRuta = GuardarArchivo(imagenPortadaFile, "inmuebles");
+                    if (nuevaRuta != null)
+                    {
+                        if (!string.IsNullOrEmpty(inmueble.ImagenPortada) && inmueble.ImagenPortada.StartsWith("/uploads/")) 
+                {
+                            string rutaVieja = Path.Combine(_environment.WebRootPath, inmueble.ImagenPortada.TrimStart('/')); 
+                    if (System.IO.File.Exists(rutaVieja)) System.IO.File.Delete(rutaVieja);
+                        }
+                        inmueble.ImagenPortada = nuevaRuta; 
+            }
+                }
+
                 _repoInmueble.Modificacion(inmueble);
-                TempData["Success"] = "Inmueble actualizado correctamente.";
+                TempData["Success"] = "Inmueble actualizado exitosamente.";
                 return RedirectToAction(nameof(Index));
             }
 
-            CargarListasDesplegables(inmueble.IdPropietario, inmueble.IdTipoInmueble);
+            CargarListasDesplegables(inmueble.IdPropietario, inmueble.IdTipoInmueble); 
             return View(inmueble);
         }
 
@@ -158,6 +187,88 @@ namespace InmobiliariaULP.Controllers
             var inmueble = _repoInmueble.ObtenerPorId(id);
             if (inmueble == null) return NotFound();
             return Json(new { precio = inmueble.PrecioPorDia, porcentaje = inmueble.PorcentajeReserva });
+        }
+
+        private string? GuardarArchivo(IFormFile? archivo, string subCarpeta)
+        {
+            if (archivo == null || archivo.Length == 0) return null;
+
+            string extension = Path.GetExtension(archivo.FileName).ToLowerInvariant();
+            string[] extensionesPermitidas = { ".jpg", ".jpeg", ".png", ".webp" };
+
+            if (!extensionesPermitidas.Contains(extension)) return null;
+
+            string carpetaDestino = Path.Combine(_environment.WebRootPath, "uploads", subCarpeta);
+            if (!Directory.Exists(carpetaDestino))
+            {
+                Directory.CreateDirectory(carpetaDestino);
+            }
+
+            string nombreUnico = $"{Guid.NewGuid()}{extension}";
+            string rutaFisica = Path.Combine(carpetaDestino, nombreUnico);
+
+            using (var stream = new FileStream(rutaFisica, FileMode.Create))
+            {
+                archivo.CopyTo(stream);
+            }
+
+            return $"/uploads/{subCarpeta}/{nombreUnico}";
+        }
+
+        // GET: Inmuebles/Galeria/5
+        public IActionResult Galeria(int id)
+        {
+            var inmueble = _repoInmueble.ObtenerPorId(id);
+            if (inmueble == null) return NotFound();
+
+            ViewBag.Inmueble = inmueble;
+            var imagenes = _repoImagen.ObtenerPorInmueble(id);
+            return View(imagenes);
+        }
+
+        // POST: Inmuebles/SubirImagenes
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult SubirImagenes(int idInmueble, List<IFormFile> fotos)
+        {
+            if (fotos != null && fotos.Count > 0)
+            {
+                int subidas = 0;
+                foreach (var foto in fotos)
+                {
+                    string? ruta = GuardarArchivo(foto, "inmuebles");
+                    if (ruta != null)
+                    {
+                        _repoImagen.Alta(new ImagenInmueble
+                        {
+                            IdInmueble = idInmueble,
+                            Url = ruta
+                        });
+                        subidas++;
+                    }
+                }
+                TempData["Success"] = $"Se agregaron {subidas} imágenes a la galería.";
+            }
+            return RedirectToAction(nameof(Galeria), new { id = idInmueble });
+        }
+
+        // POST: Inmuebles/EliminarImagen
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult EliminarImagen(int idImagen, int idInmueble)
+        {
+            var img = _repoImagen.ObtenerPorId(idImagen);
+            if (img != null)
+            {
+                if (img.Url.StartsWith("/uploads/"))
+                {
+                    string rutaFisica = Path.Combine(_environment.WebRootPath, img.Url.TrimStart('/'));
+                    if (System.IO.File.Exists(rutaFisica)) System.IO.File.Delete(rutaFisica);
+                }
+                _repoImagen.Borrar(idImagen);
+                TempData["Success"] = "Imagen eliminada de la galería.";
+            }
+            return RedirectToAction(nameof(Galeria), new { id = idInmueble });
         }
     }
 }

@@ -21,19 +21,28 @@
             </tr>
         </thead>
         <tbody>
-            @{
-                int posicion = 1;
-            }
-            @foreach (var item in Model)
+            @if (!Model.Any())
             {
                 <tr>
-                    <td><span class="badge bg-primary rounded-pill">#@(posicion++)</span></td>
-                    <td><strong>@item.Inmueble.Direccion</strong></td>
-                    <td>@item.Inmueble.TipoInmueble?.Descripcion</td>
-                    <td>@item.Inmueble.Propietario?.Apellido, @item.Inmueble.Propietario?.Nombre</td>
-                    <td class="text-center fw-bold fs-6 text-success">@item.CantidadReservas</td>
+                    <td colspan="5" class="text-center text-muted py-3">
+                        No se registran reservas concretadas en los últimos 365 días.
+                    </td>
                 </tr>
+            } else
+            {
+                int posicion = 1;
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td><span class="badge bg-primary rounded-pill">#@(posicion++)</span></td>
+                        <td><strong>@item.Inmueble.Direccion</strong></td>
+                        <td>@item.Inmueble.TipoInmueble?.Descripcion</td>
+                        <td>@item.Inmueble.Propietario?.Apellido, @item.Inmueble.Propietario?.Nombre</td>
+                        <td class="text-center fw-bold fs-6 text-success">@item.CantidadReservas</td>
+                    </tr>
+                }
             }
+            
         </tbody>
     </table>
 </div>

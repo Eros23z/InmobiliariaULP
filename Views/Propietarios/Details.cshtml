@@ -40,6 +40,7 @@
     </div>
     <div class="card-footer bg-transparent d-flex gap-2">
         <a asp-action="Edit" asp-route-id="@Model.IdPropietario" class="btn btn-warning">Editar</a>
+        <a asp-controller="Reportes" asp-action="InmueblesPorPropietario" asp-route-idPropietario="@Model.IdPropietario" class="btn btn-info text-white"> Ver Inmuebles (@Model.Nombre)</a>
         <a asp-action="Index" class="btn btn-secondary">Volver al listado</a>
     </div>
 </div>

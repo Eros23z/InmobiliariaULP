@@ -115,7 +115,12 @@ namespace InmobiliariaULP.Controllers
             }
 
             var inmueble = _repoInmueble.ObtenerPorId(reserva.IdInmueble);
-            if (inmueble != null && reserva.MontoDiario <= 0)
+
+            if (inmueble == null || !inmueble.Disponible)
+            {
+                ModelState.AddModelError("IdInmueble", "El inmueble seleccionado no se encuentra disponible para su alquiler.");
+            }
+            else if (reserva.MontoDiario <= 0)
             {
                 reserva.MontoDiario = inmueble.PrecioPorDia;
             }
@@ -130,9 +135,9 @@ namespace InmobiliariaULP.Controllers
             {
                 reserva.FechaFinOriginal = reserva.FechaFin;
                 reserva.Estado = "Vigente";
+                reserva.UsuarioCreaId = ObtenerUsuarioActualId(); 
 
                 _repoReserva.Alta(reserva);
-                reserva.UsuarioCreaId = ObtenerUsuarioActualId();
 
                 TempData["Success"] = "Reserva generada exitosamente.";
                 return RedirectToAction(nameof(Index));

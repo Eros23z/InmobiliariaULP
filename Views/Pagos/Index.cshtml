@@ -115,7 +115,10 @@
                             {
                                 <a asp-action="Edit" asp-route-id="@item.IdPago" class="btn btn-sm btn-outline-warning">Editar Concepto</a>
                                 <a asp-action="Details" asp-route-id="@item.IdPago" class="btn btn-sm btn-outline-info">Detalles</a>
-                                <a asp-action="Delete" asp-route-id="@item.IdPago" class="btn btn-sm btn-outline-danger">Anular</a>
+                                @if (User.IsInRole("Administrador"))
+                                {
+                                    <a asp-action="Delete" asp-route-id="@item.IdPago" class="btn btn-sm btn-outline-danger">Anular</a>
+                                }
                             }
                             else
                             {

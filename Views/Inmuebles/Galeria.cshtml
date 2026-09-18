@@ -1,0 +1,65 @@
+﻿@model IEnumerable<InmobiliariaULP.Models.ImagenInmueble>
+
+@{
+    var inmueble = (InmobiliariaULP.Models.Inmueble)ViewBag.Inmueble;
+    ViewData["Title"] = "Galería del Inmueble";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2>Galería: @inmueble.Direccion</h2>
+        <span class="text-muted">Cupo: @inmueble.Cupo personas | Propietario: @inmueble.Propietario?.Apellido, @inmueble.Propietario?.Nombre</span>[cite: 1]
+    </div>
+    <a asp-action="Index" class="btn btn-secondary">Volver al Listado</a>
+</div>
+<hr />
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0"><i class="bi bi-cloud-arrow-up"></i> Cargar Nuevas Fotos</h5>
+    </div>
+    <div class="card-body">
+        <form asp-action="SubirImagenes" method="post" enctype="multipart/form-data" class="row g-3 align-items-center">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="idInmueble" value="@inmueble.IdInmueble" />[cite: 1]
+
+            <div class="col-md-9">
+                <input type="file" name="fotos" multiple accept="image/*" class="form-control" required />
+                <small class="text-muted">Formatos admitidos: .jpg, .png, .webp. Puede seleccionar varios archivos juntos.</small>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-upload"></i> Subir Fotos</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row row-cols-1 row-cols-md-4 g-4">
+    @if (!Model.Any())
+    {
+        <div class="col-12">
+            <div class="alert alert-info text-center py-4">
+                Este inmueble no posee imágenes secundarias asociadas aún.
+            </div>
+        </div>
+    }
+
+    @foreach (var foto in Model)
+    {
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                <img src="@foto.Url" class="card-img-top" style="height: 180px; object-fit: cover;" alt="Foto Inmueble" />
+                <div class="card-body p-2 text-center">
+                    <form asp-action="EliminarImagen" method="post" onsubmit="return confirm('¿Desea eliminar esta imagen?');">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="idImagen" value="@foto.IdImagen" />
+                        <input type="hidden" name="idInmueble" value="@inmueble.IdInmueble" />[cite: 1]
+                        <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                            <i class="bi bi-trash"></i> Eliminar
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+</div>

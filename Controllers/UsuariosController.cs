@@ -12,10 +12,12 @@ namespace InmobiliariaULP.Controllers
     public class UsuariosController : Controller
     {
         private readonly IRepositorioUsuario _repoUsuario;
+        private readonly IWebHostEnvironment _environment;
 
-        public UsuariosController(IRepositorioUsuario repoUsuario)
+        public UsuariosController(IRepositorioUsuario repoUsuario, IWebHostEnvironment environment)
         {
             _repoUsuario = repoUsuario;
+            _environment = environment;
         }
 
         [AllowAnonymous]
@@ -91,19 +93,71 @@ namespace InmobiliariaULP.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult ModificarPerfil(Usuario usuario)
+        public async Task<IActionResult> ModificarPerfil(Usuario usuario, IFormFile? avatarFile)
         {
             var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(idClaim, out int id) || id != usuario.IdUsuario) return Forbid();
 
-            if (ModelState.IsValid)
+            var usuarioExistente = _repoUsuario.ObtenerPorId(id);
+            if (usuarioExistente == null) return NotFound();
+
+            // Procesar archivo si se seleccionó uno nuevo
+            if (avatarFile != null && avatarFile.Length > 0)
             {
-                _repoUsuario.ModificarPerfil(usuario);
-                TempData["Success"] = "Datos personales actualizados con éxito.";
-                return RedirectToAction(nameof(Perfil));
+                string extension = Path.GetExtension(avatarFile.FileName).ToLowerInvariant();
+                string[] permitidas = { ".jpg", ".jpeg", ".png", ".webp" };
+
+                if (permitidas.Contains(extension))
+                {
+                    string carpeta = Path.Combine(_environment.WebRootPath, "uploads", "avatars");
+                    if (!Directory.Exists(carpeta)) Directory.CreateDirectory(carpeta);
+
+                    string nombreArchivo = $"{Guid.NewGuid()}{extension}";
+                    string rutaFisica = Path.Combine(carpeta, nombreArchivo);
+
+                    using (var stream = new FileStream(rutaFisica, FileMode.Create))
+                    {
+                        await avatarFile.CopyToAsync(stream);
+                    }
+
+                    // Borrar foto previa si estaba en uploads
+                    if (!string.IsNullOrEmpty(usuarioExistente.Avatar) && usuarioExistente.Avatar.StartsWith("/uploads/avatars/"))
+                    {
+                        string anterior = Path.Combine(_environment.WebRootPath, usuarioExistente.Avatar.TrimStart('/'));
+                        if (System.IO.File.Exists(anterior)) System.IO.File.Delete(anterior);
+                    }
+
+                    usuario.Avatar = $"/uploads/avatars/{nombreArchivo}";
+                }
+            }
+            else
+            {
+                usuario.Avatar = usuarioExistente.Avatar;
             }
 
-            return View("Perfil", usuario);
+            usuario.Rol = usuarioExistente.Rol;
+            usuario.Estado = usuarioExistente.Estado;
+
+            _repoUsuario.ModificarPerfil(usuario);
+
+            // Reemision de la cookie con los claims actualizados
+            var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.NameIdentifier, usuario.IdUsuario.ToString()),
+                    new Claim(ClaimTypes.Name, usuario.Email),
+                    new Claim("FullName", $"{usuario.Nombre} {usuario.Apellido}"),
+                    new Claim(ClaimTypes.Role, usuario.Rol),
+                    new Claim("Avatar", usuario.Avatar ?? "")
+                };
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity));
+
+            TempData["Success"] = "Perfil y avatar actualizados exitosamente.";
+            return RedirectToAction(nameof(Perfil));
         }
 
         [HttpPost]

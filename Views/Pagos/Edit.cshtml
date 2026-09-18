@@ -12,9 +12,10 @@
 
 <div class="row">
     <div class="col-md-6">
-        <form asp-action="Edit">
+        <form asp-action="Edit" asp-route-id="@Model.IdPago" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-            <input type="hidden" asp-for="IdPago" />
+
+            <input type="hidden" name="id" value="@Model.IdPago" />
 
             <div class="mb-3">
                 <label class="form-label">Reserva Vinculada</label>

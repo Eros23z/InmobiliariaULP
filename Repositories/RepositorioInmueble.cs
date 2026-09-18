@@ -28,7 +28,7 @@ namespace InmobiliariaULP.Repositories
                 {
                     command.Parameters.AddWithValue("@search", string.IsNullOrWhiteSpace(search) ? DBNull.Value : search);
                     command.Parameters.AddWithValue("@idTipo", (object?)idTipo ?? DBNull.Value);
-                    command.Parameters.AddWithValue("@soloDisponibles", (soloDisponibles.HasValue && soloDisponibles.Value) ? true : DBNull.Value);
+                    command.Parameters.AddWithValue("@soloDisponibles", (object?)soloDisponibles ?? DBNull.Value);
 
                     connection.Open();
                     using (var reader = command.ExecuteReader())

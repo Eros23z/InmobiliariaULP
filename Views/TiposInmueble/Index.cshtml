@@ -68,7 +68,10 @@
                         <td class="text-end">
                             <a asp-action="Edit" asp-route-id="@item.IdTipoInmueble" class="btn btn-sm btn-outline-warning">Editar</a>
                             <a asp-action="Details" asp-route-id="@item.IdTipoInmueble" class="btn btn-sm btn-outline-info">Detalles</a>
-                            <a asp-action="Delete" asp-route-id="@item.IdTipoInmueble" class="btn btn-sm btn-outline-danger">Eliminar</a>
+                            @if (User.IsInRole("Administrador"))
+                            {
+                                <a asp-action="Delete" asp-route-id="@item.IdTipoInmueble" class="btn btn-sm btn-outline-danger">Eliminar</a>
+                            }
                         </td>
                     </tr>
                 }
@@ -77,4 +80,3 @@
     </table>
 </div>
 
-<partial name="_Pagination" />

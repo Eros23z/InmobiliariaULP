@@ -19,9 +19,17 @@
     </div>
 }
 
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
 <form method="get" asp-action="Index" class="row g-2 mb-3">
     <div class="col-md-5">
-        <input type="text" name="search" class="form-control" placeholder="Buscar por DNI, Nombre o Email..." value="@ViewBag.Search" />
+        <input type="text" name="search" class="form-control" placeholder="Buscar por DNI o Apellido..." value="@ViewBag.Search" />
     </div>
     <div class="col-md-2">
         <button type="submit" class="btn btn-outline-secondary w-100">
@@ -79,7 +87,10 @@
                         <td class="text-end">
                             <a asp-action="Edit" asp-route-id="@item.IdInquilino" class="btn btn-sm btn-outline-warning">Editar</a>
                             <a asp-action="Details" asp-route-id="@item.IdInquilino" class="btn btn-sm btn-outline-info">Detalles</a>
-                            <a asp-action="Delete" asp-route-id="@item.IdInquilino" class="btn btn-sm btn-outline-danger">Eliminar</a>
+                            @if (User.IsInRole("Administrador"))
+                            {
+                                <a asp-action="Delete" asp-route-id="@item.IdInquilino" class="btn btn-sm btn-outline-danger">Eliminar</a>
+                            }
                         </td>
                     </tr>
                 }
